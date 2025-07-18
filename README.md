@@ -1,6 +1,6 @@
 # RPN Reverse Polish Notation Calculator -- in Fortran
 
-![ci_cmake](https://github.com/scivision/rpn-calc-fortran/workflows/ci_cmake/badge.svg)
+![ci](https://github.com/scivision/rpn-calc-fortran/workflows/ci/badge.svg)
 
 ![Fortran logo](./doc/FortranLogo.png)
 

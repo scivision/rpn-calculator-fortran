@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.19...3.29)
+cmake_minimum_required(VERSION 3.19...4.2)
 
 project(RPNcalc
 LANGUAGES Fortran
@@ -7,7 +7,7 @@ VERSION 1.4.1
 
 enable_testing()
 
-option(${PROJECT_NAME}_BUILD_TESTING "build tests" on)
+option(RPNcalc_BUILD_TESTING "build tests" on)
 
 include(cmake/compilers.cmake)
 
@@ -33,7 +33,7 @@ target_compile_definitions(assert PRIVATE $<$<NOT:$<BOOL:${f03ieee}>>:NO_IEEE>)
 
 add_subdirectory(src)
 
-if(${PROJECT_NAME}_BUILD_TESTING)
+if(RPNcalc_BUILD_TESTING)
   add_subdirectory(test)
 endif()
 
@@ -42,4 +42,4 @@ endif()
 install(TARGETS rpncalc)
 
 install(FILES ${PROJECT_SOURCE_DIR}/README.md
-  DESTINATION share/docs/${PROJECT_NAME})
+  DESTINATION share/docs/RPNcalc)

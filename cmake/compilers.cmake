@@ -1,28 +1,22 @@
 include(GNUInstallDirs)
 include(CheckSourceCompiles)
 
-check_source_compiles(Fortran
-"
-program a
-use, intrinsic :: ieee_arithmetic, only : ieee_next_after
-implicit none
-print *, ieee_next_after(0.,0.)
-end program
-"
+set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+
+check_source_compiles(Fortran "subroutine test()
+use, intrinsic :: ieee_arithmetic
+logical :: L
+L = ieee_is_finite(0.)
+end subroutine"
 f03ieee
 )
 
-
-check_source_compiles(Fortran
-[=[
-program a
-implicit none
-
+check_source_compiles(Fortran "subroutine test()
 complex :: x
-
-print *, x%RE, x%IM
-end program
-]=]
+real :: r, c
+r = x%RE
+c = x%IM
+end subroutine"
 f08prop
 )
 
@@ -31,16 +25,10 @@ if(NOT f08prop)
 endif()
 
 
-check_source_compiles(Fortran
-[=[
-program a
-implicit none
-
+check_source_compiles(Fortran "subroutine test()
 complex :: x
-
 print *, acosh(x)
-end program
-]=]
+end subroutine"
 f08hyper
 )
 
@@ -52,9 +40,8 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
   add_compile_options(-fimplicit-none -Werror=line-truncation
   "$<$<CONFIG:Debug>:-fcheck=all;-fexceptions;-ffpe-trap=invalid,zero,overflow;-finit-real=nan;-Wconversion>"
   )
-elseif(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
-  add_compile_options(
-  -traceback
+elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "IntelLLVM")
+  add_compile_options(-traceback
   "$<$<CONFIG:Debug>:-warn;-fpe0>"
   )
 endif()

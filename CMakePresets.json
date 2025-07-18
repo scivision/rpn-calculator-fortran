@@ -7,11 +7,8 @@
   "binaryDir": "${sourceDir}/build",
   "cacheVariables": {
     "CMAKE_COMPILE_WARNING_AS_ERROR": true,
-    "CMAKE_LINK_WARNING_AS_ERROR": true
-  },
-  "environment": {
-    "CTEST_PARALLEL_LEVEL": "0",
-    "CTEST_NO_TESTS_ACTION": "error"
+    "CMAKE_LINK_WARNING_AS_ERROR": true,
+    "CMAKE_BUILD_TYPE": "Release"
   }
 }
 ],
@@ -33,7 +30,8 @@
     "noTestsAction": "error",
     "scheduleRandom": true,
     "stopOnFailure": false,
-    "timeout": 60
+    "timeout": 60,
+    "jobs": 0
   }
 }
 ],

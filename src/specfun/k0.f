@@ -120,14 +120,10 @@ C--------------------------------------------------------------------
       INTEGER I,JINT
 CS    REAL
       DOUBLE PRECISION
-     1    ARG,F,G,ONE,P,PP,Q,QQ,RESULT,SUMF,SUMG,SUMP,SUMQ,TEMP,
-     2    X,XINF,XMAX,XSMALL,XX,ZERO
+     1    ARG,F,G,P,PP,Q,QQ,RESULT,SUMF,SUMG,SUMP,SUMQ,TEMP,
+     2    X,XINF,XMAX,XSMALL,XX
       DIMENSION P(6),Q(2),PP(10),QQ(10),F(4),G(3)
-C--------------------------------------------------------------------
-C  Mathematical constants
-C--------------------------------------------------------------------
-CS    DATA ONE/1.0E0/,ZERO/0.0E0/
-      DATA ONE/1.0D0/,ZERO/0.0D0/
+
 C--------------------------------------------------------------------
 C  Machine-dependent constants
 C--------------------------------------------------------------------

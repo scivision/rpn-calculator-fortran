@@ -117,18 +117,18 @@ C--------------------------------------------------------------------
       INTEGER J,JINT
 CS    REAL
       DOUBLE PRECISION
-     1    A,ARG,B,EXP40,FORTY,HALF,ONE,ONE5,P,PBAR,PP,Q,QQ,REC15,
-     2    RESULT,SUMP,SUMQ,TWO25,X,XINF,XMAX,XSMALL,XX,ZERO
+     1    A,ARG,B,EXP40,FORTY,HALF,P,PBAR,PP,Q,QQ,REC15,
+     2    RESULT,SUMP,SUMQ,TWO25,X,XINF,XMAX,XSMALL,XX
       DIMENSION P(15),PP(8),Q(5),QQ(6)
 C--------------------------------------------------------------------
 C  Mathematical constants
 C--------------------------------------------------------------------
-CS    DATA ONE/1.0E0/,ONE5/15.0E0/,EXP40/2.353852668370199854E17/,
+CS    DATA EXP40/2.353852668370199854E17/,
 CS   1     FORTY/40.0E0/,REC15/6.6666666666666666666E-2/,
-CS   2     TWO25/225.0E0/,HALF/0.5E0/,ZERO/0.0E0/
-      DATA ONE/1.0D0/,ONE5/15.0D0/,EXP40/2.353852668370199854D17/,
+CS   2     TWO25/225.0E0/,HALF/0.5E0/
+      DATA EXP40/2.353852668370199854D17/,
      1     FORTY/40.0D0/,REC15/6.6666666666666666666D-2/,
-     2     TWO25/225.0D0/,HALF/0.5D0/,ZERO/0.0D0/
+     2     TWO25/225.0D0/,HALF/0.5D0/
 C--------------------------------------------------------------------
 C  Machine-dependent constants
 C--------------------------------------------------------------------

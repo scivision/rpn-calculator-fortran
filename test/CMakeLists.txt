@@ -1,15 +1,30 @@
 find_package(Python COMPONENTS Interpreter)
 
-if(Python_FOUND AND NOT DEFINED Scipy_ok)
-  execute_process(COMMAND ${Python_EXECUTABLE} -c "import scipy; print('SciPy', scipy.__version__)"
-  ERROR_VARIABLE err
-  RESULT_VARIABLE ret
-  )
-  message(VERBOSE "${ret} ${err}")
-  if(ret EQUAL 0)
-    set(Scipy_ok true CACHE BOOL "Scipy OK")
-  else()
-    set(Scipy_ok false CACHE BOOL "Scipy Not Found")
+if(Python_Interpreter_FOUND)
+  if(NOT DEFINED Scipy_ok)
+    execute_process(COMMAND ${Python_EXECUTABLE} -c "import scipy; print('SciPy', scipy.__version__)"
+    ERROR_VARIABLE err
+    RESULT_VARIABLE ret
+    )
+    message(VERBOSE "${ret} ${err}")
+    if(ret EQUAL 0)
+      set(Scipy_ok true CACHE BOOL "Scipy OK")
+    else()
+      set(Scipy_ok false CACHE BOOL "Scipy Not Found")
+    endif()
+  endif()
+
+  if(NOT DEFINED HAS_PYTEST)
+    execute_process(COMMAND ${Python_EXECUTABLE} -c "import pytest"
+    ERROR_VARIABLE err
+    RESULT_VARIABLE ret
+    )
+    message(VERBOSE "${ret} ${err}")
+    if(ret EQUAL 0)
+      set(HAS_PYTEST true CACHE BOOL "Pytest OK")
+    else()
+      set(HAS_PYTEST false CACHE BOOL "Pytest Not Found")
+    endif()
   endif()
 endif()
 
@@ -30,6 +45,6 @@ set_property(TEST Value PROPERTY PASS_REGULAR_EXPRESSION "308 / 29")
 get_property(test_names DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY TESTS)
 
 add_test(NAME FunctionEval
-COMMAND Python::Interpreter ${CMAKE_CURRENT_SOURCE_DIR}/test_functions.py $<TARGET_FILE:rpncalc>
+COMMAND Python::Interpreter -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/test_functions.py --exe $<TARGET_FILE:rpncalc>
 )
-set_property(TEST FunctionEval PROPERTY DISABLED $<NOT:$<BOOL:${Scipy_ok}>>)
+set_property(TEST FunctionEval PROPERTY DISABLED $<OR:$<NOT:$<BOOL:${Scipy_ok}>>,$<NOT:$<BOOL:${HAS_PYTEST}>>>)

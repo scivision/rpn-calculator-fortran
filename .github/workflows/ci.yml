@@ -38,14 +38,13 @@ jobs:
       FC: gfortran-${{ matrix.gcc_version }}
 
     steps:
+    - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
       with:
-        python-version: '3.x'
+        python-version: '3.13'
 
     - name: install pytest
-      run: python -m pip install numpy scipy pytest
-
-    - uses: actions/checkout@v4
+      run: python -m pip install -r requirements-dev.txt
 
     - run: cmake --workflow default
 
@@ -100,14 +99,14 @@ jobs:
       shell: bash
       run: echo "${{ steps.msys2.outputs.msys2-location }}/ucrt64/bin" >> $GITHUB_PATH
 
+    - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
       with:
-        python-version: '3.x'
+        python-version: '3.13'
 
     - name: install pytest
-      run: python -m pip install numpy scipy pytest
+      run: python -m pip install -r requirements-dev.txt
 
-    - uses: actions/checkout@v4
 
     - run: cmake --workflow default
 

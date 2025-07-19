@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
-from __future__ import annotations
 from pathlib import Path
 import argparse
 import subprocess
+
 import scipy.special as sp
-import pytest
 from pytest import approx
 
 
@@ -60,7 +59,3 @@ def test_bessel_general():
 def test_riemann_zeta():
 
     assert frun("rzeta", (2)) == approx(sp.zeta(2))
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])

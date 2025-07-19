@@ -96,7 +96,8 @@ CALL RANDOM_SEED()                                                           ! i
 DO                                                                            ! loop once for each input line
    WRITE(stdout,'(A)', ADVANCE='NO') '  ? '
    READ (stdin,'(A132)', iostat=ierr) LINE
-   if (ierr<0) exit  ! Ctrl D was pressed
+   if (IS_IOSTAT_END(ierr) .or. ierr < 0) exit  ! Ctrl D was pressed on POSIX or Ctrl Z on Windows
+   if (len_trim(line) == 1 .and. 4 == ichar(line(1:1))) exit  ! Ctrl D was pressed on Windows
 
 !     Convert the input line to all uppercase, removing leftmost blanks
 

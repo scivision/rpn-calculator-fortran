@@ -23,10 +23,11 @@ def frun(name: str, args, exe: Path) -> float:
     """Runs a command and returns its output"""
     if not isinstance(args, (list, tuple)):
         args = [args]
-    input = "\n".join(map(str, args)) + "\n" + name
-    raw = subprocess.run([exe], capture_output=True, input=input, text=True, timeout=5)
-    assert not raw.stderr, raw.stderr
-    return float(raw.stdout.strip().split("\n")[-1])
+    input = "\n".join(map(str, args)) + "\n" + name + "\n"
+
+    raw = subprocess.check_output([exe], input=input, text=True, timeout=5)
+
+    return float(raw.strip().split("\n")[-1])
 
 
 def test_bessel0(check_exe):

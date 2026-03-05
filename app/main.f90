@@ -88,8 +88,7 @@ FRACTION_MODE = INITIAL_FRACTION_MODE
 
 FRACTOL = INITIAL_FRACTOL                                                     ! set decimal-to-fraction tolerance
 
-!     call random_init()   ! Fortran 2018 + the following line
-CALL RANDOM_SEED()                                                           ! init random number generator
+call random_init(.false., .false.)
 
 ! -----  Main loop.
 

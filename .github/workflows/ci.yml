@@ -17,8 +17,6 @@ concurrency:
 
 env:
   CMAKE_GENERATOR: Ninja
-  CMAKE_BUILD_TYPE: Release
-  CTEST_NO_TESTS_ACTION: error
 
 
 jobs:

@@ -8,7 +8,7 @@ subroutine print_help()
 ! Fortran doesn't know the location of its executable, making it interested to read a help file in a relative location.
 
 print *, achar(13),'See README.md for complete documentation'
-print '(a,/)', 'https://github.com/scivision/rpn-calc-fortran'
+print '(a,/)', 'https://github.com/scivision/rpn-calculator-fortran'
 
 print *,'Mode calculator is in:   MODES'
 print *,'Stack:  R - roll down     U - roll up      D - drop'

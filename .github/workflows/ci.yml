@@ -15,9 +15,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  CMAKE_GENERATOR: Ninja
-
 
 jobs:
 
@@ -101,6 +98,9 @@ jobs:
   windows-msys:
     runs-on: windows-latest
     timeout-minutes: 10
+
+    env:
+      CMAKE_GENERATOR: Ninja
 
     steps:
     - uses: msys2/setup-msys2@v2

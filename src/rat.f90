@@ -725,7 +725,7 @@ INTEGER :: A1, B1, T
 A1 = A
 B1 = B
 
-DO WHILE (B1 .NE. 0)
+DO WHILE (B1 /= 0)
    T = B1
    B1 = MOD (A1,B1)
    A1 = T
@@ -747,7 +747,7 @@ elemental integer FUNCTION LCM (A, B)
 
 INTEGER, INTENT(IN) :: A, B
 
-LCM = A*B/GCD(A,B)
+LCM = ABS((A / GCD(A, B)) * B)
 
 END FUNCTION LCM
 

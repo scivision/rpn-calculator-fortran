@@ -31,7 +31,11 @@ interface acoth
 procedure :: acoth_r, acoth_c
 end interface acoth
 
-public :: sech, asech, csch, acsch, coth, acoth, tanhc, ctanhc
+interface tanhc
+procedure :: tanhc_r, tanhc_c
+end interface tanhc
+
+public :: sech, asech, csch, acsch, coth, acoth, tanhc
 
 contains
 
@@ -42,37 +46,24 @@ contains
 !  Tanhc function.
 !***********************************************************************************************************************************
 
-elemental real(wp) FUNCTION TANHC (X) RESULT (Y)
-
+elemental real(wp) FUNCTION TANHC_r (X) RESULT (Y)
 real(wp), INTENT(IN) :: X
-
 IF (X .EQ. 0._wp) THEN
    Y = 1
 ELSE
    Y = TANH(X) / X
 END IF
+END FUNCTION
 
 
-END FUNCTION TANHC
-
-
-!***********************************************************************************************************************************
-!  CTANHC
-!
-!  Complex tanhc function.
-!***********************************************************************************************************************************
-
-elemental complex(wp) FUNCTION CTANHC (Z) RESULT (Y)
-
+elemental complex(wp) FUNCTION TANHC_c (Z) RESULT (Y)
 COMPLEX(wp), INTENT(IN) :: Z
-
 IF (Z .EQ. (0._wp, 0._wp)) THEN
    Y = (1._wp, 0._wp)
 ELSE
    Y = TANH(Z) / Z
 END IF
-
-END FUNCTION CTANHC
+END FUNCTION
 
 !***********************************************************************************************************************************
 !  SECH
@@ -80,19 +71,15 @@ END FUNCTION CTANHC
 !  Hyperbolic secant.
 !***********************************************************************************************************************************
 
-elemental real(wp) FUNCTION SECH_r(X) result(sech)
+elemental real(wp) FUNCTION SECH_r(X) result(s)
 real(wp), INTENT (IN) :: X
+s = 1/COSH(X)
+END FUNCTION
 
-sech = 1/COSH(X)
-END FUNCTION SECH_r
-
-
-elemental complex(wp) FUNCTION SECH_c(Z) RESULT(sech)
+elemental complex(wp) FUNCTION SECH_c(Z) RESULT(s)
 COMPLEX(wp), INTENT (IN) :: Z
-
-sech = 1/cosh(Z)
-END FUNCTION SECH_c
-
+s = 1/cosh(Z)
+END FUNCTION
 
 
 !***********************************************************************************************************************************
@@ -101,19 +88,16 @@ END FUNCTION SECH_c
 !  Inverse hyperbolic secant.
 !***********************************************************************************************************************************
 
-elemental real(wp) FUNCTION ASECH_r(y) result(asech)
+elemental real(wp) FUNCTION ASECH_r(y) result(s)
 real(wp), INTENT (IN) :: Y
+s = ACOSH(1/Y)
+END FUNCTION
 
-asech = ACOSH(1/Y)
-END FUNCTION ASECH_r
 
-
-elemental complex(wp) FUNCTION ASECH_c(Y) result(asech)
+elemental complex(wp) FUNCTION ASECH_c(Y) result(s)
 COMPLEX(wp), INTENT (IN) :: Y
-
-asech = ACOSH(1/Y)
-
-END FUNCTION ASECH_c
+s = ACOSH(1/Y)
+END FUNCTION
 
 !***********************************************************************************************************************************
 !  CSCH
@@ -123,16 +107,14 @@ END FUNCTION ASECH_c
 
 elemental real(wp) FUNCTION CSCH_r(X) RESULT (Y)
 real(wp), INTENT (IN) :: X
-
 Y = 1/SINH(X)
-END FUNCTION CSCH_r
+END FUNCTION
 
 
 elemental complex(wp) FUNCTION CSCH_c(Z) RESULT (Y)
 COMPLEX(wp), INTENT (IN) :: Z
-
 Y = 1 / SINH(Z)
-END FUNCTION CSCH_c
+END FUNCTION
 
 !***********************************************************************************************************************************
 !  ACSCH
@@ -142,17 +124,14 @@ END FUNCTION CSCH_c
 
 elemental real(wp) FUNCTION ACSCH_r(Y) RESULT (X)
 real(wp), INTENT (IN) :: Y
-
 X = ASINH(1/Y)
-END FUNCTION ACSCH_r
+END FUNCTION
 
 
 elemental complex(wp) FUNCTION ACSCH_c(Y) RESULT (X)
 COMPLEX(wp), INTENT (IN) :: Y
-
 X = ASINH(1/Y)
-
-END FUNCTION ACSCH_c
+END FUNCTION
 
 
 !***********************************************************************************************************************************
@@ -161,19 +140,15 @@ END FUNCTION ACSCH_c
 !  Hyperbolic cotangent.
 !***********************************************************************************************************************************
 
-elemental real(wp) FUNCTION COTH_r(X) result(coth)
+elemental real(wp) FUNCTION COTH_r(X) result(s)
 real(wp), INTENT (IN) :: X
+s = 1/TANH(X)
+END FUNCTION
 
-coth = 1/TANH(X)
-END FUNCTION COTH_r
-
-
-elemental complex(wp) FUNCTION COTH_c(Z) result(coth)
+elemental complex(wp) FUNCTION COTH_c(Z) result(s)
 COMPLEX(wp), INTENT (IN) :: Z
-
-COTH = 1 / tanh(Z)
-END FUNCTION COTH_c
-
+s = 1 / tanh(Z)
+END FUNCTION
 
 
 !***********************************************************************************************************************************
@@ -182,18 +157,15 @@ END FUNCTION COTH_c
 !  Inverse hyperbolic cotangent.
 !***********************************************************************************************************************************
 
-elemental real(wp) FUNCTION ACOTH_r(Y) result(acoth)
+elemental real(wp) FUNCTION ACOTH_r(Y) result(s)
 real(wp), INTENT (IN) :: Y
+s = ATANH(1/Y)
+END FUNCTION
 
-ACOTH = ATANH(1/Y)
-END FUNCTION ACOTH_r
 
-
-elemental complex(wp) FUNCTION ACOTH_c(Z) result(acoth)
+elemental complex(wp) FUNCTION ACOTH_c(Z) result(s)
 COMPLEX(wp), INTENT(IN) :: Z
-
-acoth = 0.5_wp*LOG((Z+1)/(Z-1))
-END FUNCTION ACOTH_c
-
+s = 0.5_wp*LOG((Z+1)/(Z-1))
+END FUNCTION
 
 end module hyper

@@ -3199,7 +3199,7 @@ case('TANHC')                                             ! TANHC
    SELECT CASE (DOMAIN_MODE)
       CASE (2)
          CLASTX = CSTACK(1)
-         CSTACK(1) = CTANHC(CSTACK(1))
+         CSTACK(1) = TANHC(CSTACK(1))
       CASE (1,3)
          if(domain_mode == 3) CALL SWITCH_RAT_TO_REAL
          LASTX = STACK(1)

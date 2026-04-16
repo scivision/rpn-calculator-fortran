@@ -40,6 +40,34 @@ interface crd
 procedure :: crd_r, crd_c
 end interface crd
 
+interface vers
+procedure :: vers_r, vers_c
+end interface vers
+
+interface avers
+procedure :: avers_r, avers_c
+end interface avers
+
+interface covers
+procedure :: covers_r, covers_c
+end interface covers
+
+interface acovers
+procedure :: acovers_r, acovers_c
+end interface acovers
+
+interface exsec
+procedure :: exsec_r, exsec_c
+end interface exsec
+
+interface aexsec
+procedure :: aexsec_r, aexsec_c
+end interface aexsec
+
+interface acrd
+procedure :: acrd_r, acrd_c
+end interface acrd
+
 contains
 
 
@@ -51,16 +79,14 @@ contains
 
 elemental real(wp) FUNCTION SEC_r (X) RESULT (r)
 real(wp), INTENT (IN) :: X
-
 r = 1/COS(X)
-END FUNCTION SEC_r
+END FUNCTION
 
 
-elemental complex(wp) FUNCTION SEC_c(Z) result(r)
+elemental complex(wp) FUNCTION SEC_c(Z) RESULT (r)
 COMPLEX(wp), INTENT(IN) :: Z
-
 r = 1/COS(Z)
-END FUNCTION SEC_c
+END FUNCTION
 
 
 
@@ -72,34 +98,30 @@ END FUNCTION SEC_c
 
 elemental real(wp) FUNCTION ASEC_r (Y) RESULT (X)
 real(wp), INTENT (IN) :: Y
-
 X = ACOS(1/Y)
-END FUNCTION ASEC_r
+END FUNCTION
 
 
 elemental complex(wp) FUNCTION ASEC_c (Z) RESULT (Y)
 COMPLEX(wp), INTENT(IN) :: Z
-
 Y = ACOS(1/Z)
-END FUNCTION ASEC_c
+END FUNCTION
 !***********************************************************************************************************************************
 !  CSC
 !
 !  Cosecant.
 !***********************************************************************************************************************************
 
-elemental real(wp) FUNCTION CSC_r(X) result(r)
+elemental real(wp) FUNCTION CSC_r(X) RESULT (r)
 real(wp), INTENT (IN) :: X
-
 r = 1/SIN(X)
-END FUNCTION CSC_r
+END FUNCTION
 
 
-elemental complex(wp) FUNCTION CSC_c(Z) result(r)
+elemental complex(wp) FUNCTION CSC_c(Z) RESULT (r)
 COMPLEX(wp), INTENT(IN) :: Z
-
 r = 1/SIN(Z)
-END FUNCTION CSC_c
+END FUNCTION
 
 
 !***********************************************************************************************************************************
@@ -108,18 +130,16 @@ END FUNCTION CSC_c
 !  Inverse cosecant.
 !***********************************************************************************************************************************
 
-elemental real(wp) FUNCTION ACSC_r(Y) result(r)
+elemental real(wp) FUNCTION ACSC_r(Y) RESULT (r)
 real(wp), INTENT (IN) :: Y
-
 r = ASIN(1/Y)
-END FUNCTION ACSC_r
+END FUNCTION
 
 
-elemental complex(wp) FUNCTION ACSC_c(Z) RESULT(r)
+elemental complex(wp) FUNCTION ACSC_c(Z) RESULT (r)
 COMPLEX(wp), INTENT(IN) :: Z
-
 r = ASIN(1/Z)
-END FUNCTION ACSC_c
+END FUNCTION
 
 
 !***********************************************************************************************************************************
@@ -128,18 +148,16 @@ END FUNCTION ACSC_c
 !  Cotangent.
 !***********************************************************************************************************************************
 
-elemental real(wp) FUNCTION COT_r(X) result(r)
+elemental real(wp) FUNCTION COT_r(X) RESULT (r)
 real(wp), INTENT (IN) :: X
-
 r = 1/TAN(X)
-END FUNCTION COT_r
+END FUNCTION
 
 
-elemental complex(wp) FUNCTION COT_c(Z) result(r)
+elemental complex(wp) FUNCTION COT_c(Z) RESULT (r)
 COMPLEX(wp), INTENT(IN) :: Z
-
 r = COS(Z)/SIN(Z)
-END FUNCTION COT_c
+END FUNCTION
 
 !***********************************************************************************************************************************
 !  ACOT
@@ -147,18 +165,16 @@ END FUNCTION COT_c
 !  Inverse cotangent.
 !***********************************************************************************************************************************
 
-elemental real(wp) FUNCTION ACOT_r (Y) result(r)
+elemental real(wp) FUNCTION ACOT_r (Y) RESULT (r)
 real(wp), INTENT (IN) :: Y
-
 r = ATAN(1/Y)
-END FUNCTION ACOT_r
+END FUNCTION
 
 
-elemental complex(wp) FUNCTION ACOT_c(Y) result(r)
+elemental complex(wp) FUNCTION ACOT_c(Y) RESULT (r)
 complex(wp), INTENT (IN) :: Y
-
 r = ATAN(1/Y)
-END FUNCTION ACOT_c
+END FUNCTION
 
 !***********************************************************************************************************************************
 !  ACOT2
@@ -167,13 +183,10 @@ END FUNCTION ACOT_c
 !***********************************************************************************************************************************
 
 elemental real(wp) FUNCTION ACOT2 (Y,Z)
-
 real(wp), INTENT (IN) :: Y                                           ! cotangent numerator
 real(wp), INTENT (IN) :: Z                                           ! cotangent denominator
-
 ACOT2 = ATAN2(Z,Y)
-
-END FUNCTION ACOT2
+END FUNCTION
 
 
 !***********************************************************************************************************************************
@@ -182,25 +195,16 @@ END FUNCTION ACOT2
 !  Exsecant.
 !***********************************************************************************************************************************
 
-elemental real(wp) FUNCTION EXSEC (X)
+elemental real(wp) FUNCTION EXSEC_r (X) RESULT (Y)
 real(wp), INTENT (IN) :: X
+Y = 1/COS(X) - 1
+END FUNCTION
 
-EXSEC = 1/COS(X) - 1
 
-END FUNCTION EXSEC
-
-!***********************************************************************************************************************************
-!  CEXSEC
-!
-!  Complex exsecant.
-!***********************************************************************************************************************************
-
-elemental complex(wp) FUNCTION CEXSEC (Z)
-
+elemental complex(wp) FUNCTION EXSEC_c (Z) RESULT (Y)
 COMPLEX(wp), INTENT(IN) :: Z
- cexsec = 1/COS(Z) - 1
-
-END FUNCTION CEXSEC
+Y = 1/COS(Z) - 1
+END FUNCTION
 
 !***********************************************************************************************************************************
 !  AEXSEC
@@ -208,26 +212,15 @@ END FUNCTION CEXSEC
 !  Inverse exsecant.
 !***********************************************************************************************************************************
 
-elemental real(wp) FUNCTION AEXSEC (Y)
+elemental real(wp) FUNCTION AEXSEC_r (Y) RESULT (X)
 real(wp), INTENT (IN) :: Y
-
-AEXSEC = ACOS(1 / (Y + 1))
-
-END FUNCTION AEXSEC
-
-!***********************************************************************************************************************************
-!  CAEXSEC
-!
-!  Complex inverse exsecant.
-!***********************************************************************************************************************************
-
-elemental complex(wp) FUNCTION CAEXSEC (Y) RESULT (X)
-
-COMPLEX(wp), INTENT (IN) :: Y
-
 X = ACOS(1 / (Y + 1))
+END FUNCTION
 
-END FUNCTION CAEXSEC
+elemental complex(wp) FUNCTION AEXSEC_c (Y) RESULT (X)
+COMPLEX(wp), INTENT (IN) :: Y
+X = ACOS(1 / (Y + 1))
+END FUNCTION
 
 
 !***********************************************************************************************************************************
@@ -236,25 +229,15 @@ END FUNCTION CAEXSEC
 !  Versine.
 !***********************************************************************************************************************************
 
-elemental real(wp) FUNCTION VERS (X)
+elemental real(wp) FUNCTION VERS_r (X) RESULT (Y)
 real(wp), INTENT (IN) :: X
+Y = 1 - COS(X)
+END FUNCTION
 
-VERS = 1 - COS(X)
-
-END FUNCTION VERS
-
-!***********************************************************************************************************************************
-!  CVERS
-!
-!  Complex versine.
-!***********************************************************************************************************************************
-
-elemental complex(wp) FUNCTION CVERS (Z)
+elemental complex(wp) FUNCTION VERS_c (Z) RESULT (Y)
 COMPLEX(wp), INTENT(IN) :: Z
-
- CVERS = 1 - COS(Z)
-
-END FUNCTION CVERS
+Y = 1 - COS(Z)
+END FUNCTION
 
 !***********************************************************************************************************************************
 !  AVERS
@@ -262,26 +245,15 @@ END FUNCTION CVERS
 !  Inverse versine.
 !***********************************************************************************************************************************
 
-elemental real(wp) FUNCTION AVERS (Y)
+elemental real(wp) FUNCTION AVERS_r (Y) RESULT (X)
 real(wp), INTENT (IN) :: Y
+X = ACOS(1 - Y)
+END FUNCTION
 
-AVERS = ACOS(1 - Y)
-
-END FUNCTION AVERS
-
-!***********************************************************************************************************************************
-!  CAVERS
-!
-!  Complex inverse versine.
-!***********************************************************************************************************************************
-
-elemental complex(wp) FUNCTION CAVERS (Y) RESULT (X)
-
+elemental complex(wp) FUNCTION AVERS_c (Y) RESULT (X)
 COMPLEX(wp), INTENT (IN) :: Y
-
-X = acos(1 - Y)
-
-END FUNCTION CAVERS
+X = ACOS(1 - Y)
+END FUNCTION
 
 
 !*************************************************************************************************
@@ -290,32 +262,16 @@ END FUNCTION CAVERS
 !  Coversine.
 !***********************************************************************************************************************************
 
-elemental real(wp) FUNCTION COVERS (X) RESULT (Y)
-
+elemental real(wp) FUNCTION COVERS_r (X) RESULT (Y)
 real(wp), INTENT (IN) :: X
-
 Y = 1 - SIN(X)
+END FUNCTION
 
-END FUNCTION COVERS
 
-
-!***********************************************************************************************************************************
-!  CCOVERS
-!
-!  Complex coversine.
-!***********************************************************************************************************************************
-
-FUNCTION CCOVERS (Z) RESULT (Y)
-
+elemental complex(wp) FUNCTION COVERS_c (Z) RESULT (Y)
 COMPLEX(wp), INTENT(IN) :: Z
-COMPLEX(wp) :: Y
-
 Y = 1 - SIN(Z)
-
-END FUNCTION CCOVERS
-
-
-
+END FUNCTION
 
 
 !***********************************************************************************************************************************
@@ -324,27 +280,15 @@ END FUNCTION CCOVERS
 !  Inverse coversine.
 !***********************************************************************************************************************************
 
-elemental real(wp) FUNCTION ACOVERS (Y) RESULT (X)
+elemental real(wp) FUNCTION ACOVERS_r (Y) RESULT (X)
 real(wp), INTENT (IN) :: Y
-
 X = ASIN(1 - Y)
-END FUNCTION ACOVERS
+END FUNCTION
 
-
-
-
-
-!***********************************************************************************************************************************
-!  CACOVERS
-!
-!  Complex inverse coversine.
-!***********************************************************************************************************************************
-
-elemental complex(wp) FUNCTION CACOVERS (Y) RESULT (X)
+elemental complex(wp) FUNCTION ACOVERS_c (Y) RESULT (X)
 COMPLEX(wp), INTENT (IN) :: Y
-
 X = ASIN(1 - Y)
-END FUNCTION CACOVERS
+END FUNCTION
 
 
 !***********************************************************************************************************************************
@@ -355,17 +299,14 @@ END FUNCTION CACOVERS
 
 elemental real(wp) FUNCTION HAV_r(X) RESULT (Y)
 real(wp), INTENT (IN) :: X
-
 Y = (SIN(0.5_wp*X))**2
-END FUNCTION HAV_r
+END FUNCTION
 
 
 elemental complex(wp) FUNCTION HAV_c(Z) RESULT (Y)
 COMPLEX(wp), INTENT(IN) :: Z
-
 Y = (SIN(0.5_wp*Z))**2
-END FUNCTION HAV_c
-
+END FUNCTION
 
 
 !***********************************************************************************************************************************
@@ -375,18 +316,14 @@ END FUNCTION HAV_c
 !***********************************************************************************************************************************
 
 elemental real(wp) FUNCTION AHAV_r(Y) RESULT (X)
-
 real(wp), INTENT (IN) :: Y
-
 X = 2*ASIN(SQRT(Y))
-END FUNCTION AHAV_r
-
+END FUNCTION
 
 elemental complex(wp) FUNCTION AHAV_c(Y) RESULT (X)
 COMPLEX(wp), INTENT (IN) :: Y
-
 X = 2*asin(SQRT(Y))
-END FUNCTION AHAV_c
+END FUNCTION
 
 
 !***********************************************************************************************************************************
@@ -395,19 +332,15 @@ END FUNCTION AHAV_c
 !  Chord (of Ptolemy).
 !***********************************************************************************************************************************
 
-elemental real(wp) FUNCTION CRD_r (X) result(r)
+elemental real(wp) FUNCTION CRD_r (X) RESULT (r)
 real(wp), INTENT (IN) :: X
-
 r = 2*SIN(0.5_wp*X)
-END FUNCTION CRD_r
+END FUNCTION
 
-
-elemental complex(wp) FUNCTION CRD_c (Z) RESULT(r)
+elemental complex(wp) FUNCTION CRD_c (Z) RESULT (r)
 COMPLEX(wp), INTENT(IN) :: Z
-
 r = 2*SIN(0.5_wp*Z)
-END FUNCTION CRD_c
-
+END FUNCTION
 
 
 !***********************************************************************************************************************************
@@ -416,22 +349,15 @@ END FUNCTION CRD_c
 !  Inverse chord (of Ptolemy).
 !***********************************************************************************************************************************
 
-elemental real(wp) FUNCTION ACRD(Y) RESULT(X)
+elemental real(wp) FUNCTION ACRD_r(Y) RESULT (X)
 real(wp), INTENT (IN) :: Y
-
 X = 2*ASIN(0.5_wp*Y)
-END FUNCTION ACRD
-!***********************************************************************************************************************************
-!  CACRD
-!
-!  Complex inverse chord (of Ptolemy).
-!***********************************************************************************************************************************
+END FUNCTION
 
-elemental complex(wp) FUNCTION CACRD(Y) RESULT(X)
+elemental complex(wp) FUNCTION ACRD_c(Y) RESULT (X)
 COMPLEX(wp), INTENT (IN) :: Y
-
-X = 2*asin(0.5_wp*Y)
-END FUNCTION CACRD
+X = 2*ASIN(0.5_wp*Y)
+END FUNCTION
 
 
 end module trig

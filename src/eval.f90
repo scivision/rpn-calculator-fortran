@@ -444,7 +444,7 @@ case('ACOVERS')                                            ! ACOVERS
          END IF
       CASE (2)
          CLASTX = CSTACK(1)
-         CSTACK(1) = CACOVERS(CSTACK(1))/ANGLE_FACTOR
+         CSTACK(1) = ACOVERS(CSTACK(1))/ANGLE_FACTOR
       CASE (3)
          IF (ABS(RNSTACK(1)) < 0) THEN
             write(stderr, *) '  ACOVERS Error'
@@ -466,7 +466,7 @@ case('ACRD')                                               ! ACRD
          END IF
       CASE (2)
          CLASTX = CSTACK(1)
-         CSTACK(1) = CACRD(CSTACK(1))/ANGLE_FACTOR
+         CSTACK(1) = ACRD(CSTACK(1))/ANGLE_FACTOR
       CASE (3)
          IF (ABS(RNSTACK(1)) > 2*ABS(RDSTACK(1))) THEN
             write(stderr, *) '  ACRD Error'
@@ -532,7 +532,7 @@ case('AEXSEC')                                             ! AEXSEC
          END IF
       CASE (2)
          CLASTX = CSTACK(1)
-         CSTACK(1) = CAEXSEC(CSTACK(1))/ANGLE_FACTOR
+         CSTACK(1) = AEXSEC(CSTACK(1))/ANGLE_FACTOR
       CASE (3)
          IF (ABS(RNSTACK(1)) < 0) THEN
             write(stderr, *) '  AEXSEC Error'
@@ -760,7 +760,7 @@ case('AVERS')                                             ! AVERS
          END IF
       CASE (2)
          CLASTX = CSTACK(1)
-         CSTACK(1) = CAVERS(CSTACK(1))/ANGLE_FACTOR
+         CSTACK(1) = AVERS(CSTACK(1))/ANGLE_FACTOR
       CASE (3)
          IF (ABS(RNSTACK(1)) < 0) THEN
             write(stderr, *) '  AVERS Error'
@@ -1334,7 +1334,7 @@ case('COVERS')                                             ! COVERS
    SELECT CASE (DOMAIN_MODE)
       CASE (2)
          CLASTX = CSTACK(1)
-         CSTACK(1) = CCOVERS(CSTACK(1)*ANGLE_FACTOR)
+         CSTACK(1) = COVERS(CSTACK(1)*ANGLE_FACTOR)
       CASE (1,3)
          if(domain_mode == 3) CALL SWITCH_RAT_TO_REAL
          LASTX = STACK(1)
@@ -1530,7 +1530,7 @@ case('EXSEC')                                             ! EXSEC
    SELECT CASE (DOMAIN_MODE)
       CASE (2)
          CLASTX = CSTACK(1)
-         CSTACK(1) = CEXSEC(CSTACK(1)*ANGLE_FACTOR)
+         CSTACK(1) = EXSEC(CSTACK(1)*ANGLE_FACTOR)
       CASE (1,3)
          if(domain_mode == 3) CALL SWITCH_RAT_TO_REAL
          LASTX = STACK(1)
@@ -3224,7 +3224,7 @@ case('VERS')                                               ! VERS
    SELECT CASE (DOMAIN_MODE)
       CASE (2)
          CLASTX = CSTACK(1)
-         CSTACK(1) = CVERS(CSTACK(1)*ANGLE_FACTOR)
+         CSTACK(1) = VERS(CSTACK(1)*ANGLE_FACTOR)
       CASE (1,3)
          if(domain_mode == 3) CALL SWITCH_RAT_TO_REAL
          LASTX = STACK(1)

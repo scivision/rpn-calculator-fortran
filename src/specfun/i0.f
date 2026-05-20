@@ -32,7 +32,7 @@ C
 C      Function                     Parameters for CALCI0
 C       Call              ARG                  RESULT          JINT
 C
-C     BESI0(ARG)    ABS(ARG) .LE. XMAX        I0(ARG)           1
+C     BESI0(ARG)    ABS(ARG) <= XMAX        I0(ARG)           1
 C     BESEI0(ARG)    any real ARG        EXP(-ABS(ARG))*I0(ARG) 2
 C
 C   The main computation evaluates slightly modified forms of
@@ -55,7 +55,7 @@ C
 C   beta   = Radix for the floating-point system
 C   maxexp = Smallest power of beta that overflows
 C   XSMALL = Positive argument such that 1.0 - X = 1.0 to
-C            machine precision for all ABS(X) .LE. XSMALL.
+C            machine precision for all ABS(X) <= XSMALL.
 C   XINF =   Largest positive machine number; approximately
 C            beta**maxexp
 C   XMAX =   Largest argument acceptable to BESI0;  Solution to
@@ -100,7 +100,7 @@ C*******************************************************************
 C
 C Error returns
 C
-C  The program returns XINF for BESI0 for ABS(ARG) .GT. XMAX.
+C  The program returns XINF for BESI0 for ABS(ARG) > XMAX.
 C
 C
 C  Intrinsic functions required are:
@@ -135,7 +135,7 @@ C--------------------------------------------------------------------
 CS    DATA XSMALL/2.98E-8/,XINF/3.40E38/,XMAX/91.9E0/
       DATA XSMALL/5.55D-17/,XINF/1.79D308/,XMAX/713.986D0/
 C--------------------------------------------------------------------
-C  Coefficients for XSMALL .LE. ABS(ARG) .LT. 15.0
+C  Coefficients for XSMALL <= ABS(ARG) < 15.0
 C--------------------------------------------------------------------
       DATA  P/-5.2487866627945699800D-18,-1.5982226675653184646D-14,
      1        -2.6843448573468483278D-11,-3.0517226450451067446D-08,
@@ -149,7 +149,7 @@ C--------------------------------------------------------------------
      1        -6.5626560740833869295D+09, 3.7604188704092954661D+12,
      2        -9.7087946179594019126D+14/
 C--------------------------------------------------------------------
-C  Coefficients for 15.0 .LE. ABS(ARG)
+C  Coefficients for 15.0 <= ABS(ARG)
 C--------------------------------------------------------------------
       DATA PP/-3.9843750000000000000D-01, 2.9205384596336793945D+00,
      1        -2.4708469169133954315D+00, 4.7914889422856814203D-01,
@@ -161,11 +161,11 @@ C--------------------------------------------------------------------
      3        -5.5194330231005480228D-04/
 C--------------------------------------------------------------------
       X = ABS(ARG)
-      IF (X .LT. XSMALL) THEN
+      IF (X < XSMALL) THEN
             RESULT =   1
-         ELSE IF (X .LT. 15) THEN
+         ELSE IF (X < 15) THEN
 C--------------------------------------------------------------------
-C  XSMALL .LE.  ABS(ARG)  .LT. 15.0
+C  XSMALL <=  ABS(ARG)  < 15.0
 C--------------------------------------------------------------------
             XX = X * X
             SUMP = P(1)
@@ -175,13 +175,13 @@ C--------------------------------------------------------------------
             XX = XX - 225
             SUMQ = ((((XX+Q(1))*XX+Q(2))*XX+Q(3))*XX+Q(4))*XX+Q(5)
             RESULT = SUMP / SUMQ
-            IF (JINT .EQ. 2) RESULT = RESULT * EXP(-X)
-         ELSE IF (X .GE. 15) THEN
-            IF ((JINT .EQ. 1) .AND. (X .GT. XMAX)) THEN
+            IF (JINT == 2) RESULT = RESULT * EXP(-X)
+         ELSE IF (X >= 15) THEN
+            IF ((JINT == 1) .AND. (X > XMAX)) THEN
                   RESULT = XINF
                ELSE
 C--------------------------------------------------------------------
-C  15.0  .LE.  ABS(ARG)
+C  15.0  <=  ABS(ARG)
 C--------------------------------------------------------------------
                   XX =   1 / X - REC15
                   SUMP = ((((((PP(1)*XX+PP(2))*XX+PP(3))*XX+PP(4))*XX+
@@ -189,13 +189,13 @@ C--------------------------------------------------------------------
                   SUMQ = ((((((XX+QQ(1))*XX+QQ(2))*XX+QQ(3))*XX+
      1                   QQ(4))*XX+QQ(5))*XX+QQ(6))*XX+QQ(7)
                   RESULT = SUMP / SUMQ
-                  IF (JINT .EQ. 2) THEN
+                  IF (JINT == 2) THEN
                         RESULT = (RESULT - PP(1)) / SQRT(X)
                      ELSE
 C--------------------------------------------------------------------
 C  Calculation reformulated to avoid premature overflow
 C--------------------------------------------------------------------
-                        IF (X .LE.(XMAX-15)) THEN
+                        IF (X <=(XMAX-15)) THEN
                               A = EXP(X)
                               B =   1
                            ELSE
@@ -215,7 +215,7 @@ C--------------------------------------------------------------------
 C
 C This long precision subprogram computes approximate values for
 C   modified Bessel functions of the first kind of order zero for
-C   arguments ABS(ARG) .LE. XMAX  (see comments heading CALCI0).
+C   arguments ABS(ARG) <= XMAX  (see comments heading CALCI0).
 C
 C--------------------------------------------------------------------
       real(wp), intent(in) :: X

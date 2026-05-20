@@ -2,13 +2,13 @@ module funcs
 
 use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 use assert, only: wp, isclose
-use bessel
-use trig
+use bessel, only : rybesl, rjbesl, ribesl, rkbesl, besi0, besi1, besk0, besk1, jinc
+use trig, only : csc, acsc, sec, asec, cot, acot, acot2, hav, ahav, crd, vers, avers, covers, acovers, exsec, aexsec, acrd
 use rat, only: ratnorm, rdiv, rsub, radd, rmul, isfrac, lcm, gcd, isint, isreal, iscomplex, isdigit, isrational, &
   dec_to_frac, frac_to_mixed
-use hyper
-use stats
-use fgamma
+use hyper, only : sech, asech, csch, acsch, coth, acoth, tanhc
+use stats, only : CNR, PNR, clinreg, linreg, rlinreg
+use fgamma, only: beta, cbeta, rbeta, cgamma, psi
 
 implicit none
 
@@ -30,6 +30,17 @@ end interface tanc
 
 real(wp), parameter, private :: xinf = huge(0._wp), xmax = xinf, xmin = tiny(0._wp)
 complex(wp), parameter, private :: c0 = (0._wp, 0._wp)
+
+private
+public :: rybesl, rjbesl, ribesl, rkbesl, besi0, besi1, besk0, besk1, jinc
+public :: csc, acsc, sec, asec, cot, acot, acot2, hav, ahav, crd, vers, avers, covers, acovers, exsec, aexsec, acrd
+public :: ratnorm, rdiv, rsub, radd, rmul, isfrac, lcm, gcd, isint, isreal, iscomplex, isdigit, isrational
+public :: dec_to_frac, frac_to_mixed
+public :: sech, asech, csch, acsch, coth, acoth, tanhc
+public :: CNR, PNR, clinreg, linreg, rlinreg
+public :: beta, cbeta, rbeta, cgamma, psi
+public :: frac, rfrac, rmod, rnint, cuberoot, HMS2H, cint, rint, kepler, clog10, cmod, reduce, riemannzeta
+public :: sinc, tanc, sinhc, csinhc, erfcx, h2hmsd, toLower, toUpper
 
 contains
 
@@ -141,14 +152,14 @@ END FUNCTION RINT
 
 elemental SUBROUTINE RNINT (N, D)
 
-INTEGER, INTENT(IN OUT) :: N, D
+INTEGER, INTENT(inout) :: N, D
 INTEGER :: NN, DN, TN, TD
 
 NN = N
 DN = D
 CALL RATNORM (NN, DN)
 
-IF (NN .GE. 0) THEN
+IF (NN >= 0) THEN
    CALL RADD (NN, DN, 1, 2, TN, TD)
    N = TN / TD
    D = 1
@@ -450,10 +461,10 @@ real(wp) :: REVS
 
 ANGLE_MAX = ANGLE_MIN + tau
 
-IF (THETA .LT. ANGLE_MIN) THEN
+IF (THETA < ANGLE_MIN) THEN
    REVS = AINT((ANGLE_MIN-THETA)/tau) + 1
    RHO = THETA + REVS*tau
-ELSE IF (THETA .GE. ANGLE_MAX) THEN
+ELSE IF (THETA >= ANGLE_MAX) THEN
    REVS = AINT((THETA-ANGLE_MIN)/tau)
    RHO = THETA - REVS*tau
 ELSE

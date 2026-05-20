@@ -68,6 +68,10 @@ interface acrd
 procedure :: acrd_r, acrd_c
 end interface acrd
 
+private
+public :: csc, acsc, sec, asec, cot, acot, acot2, hav, ahav, crd
+public :: vers, avers, covers, acovers, exsec, aexsec, acrd
+
 contains
 
 
@@ -183,8 +187,8 @@ END FUNCTION
 !***********************************************************************************************************************************
 
 elemental real(wp) FUNCTION ACOT2 (Y,Z)
-real(wp), INTENT (IN) :: Y                                           ! cotangent numerator
-real(wp), INTENT (IN) :: Z                                           ! cotangent denominator
+real(wp), INTENT (IN) :: Y       !< cotangent numerator
+real(wp), INTENT (IN) :: Z       !< cotangent denominator
 ACOT2 = ATAN2(Z,Y)
 END FUNCTION
 

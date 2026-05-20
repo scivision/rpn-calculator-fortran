@@ -31,7 +31,7 @@ C
 C      Function                     Parameters for CALCI1
 C       Call              ARG                  RESULT          JINT
 C
-C     BESI1(ARG)    ABS(ARG) .LE. XMAX        I1(ARG)           1
+C     BESI1(ARG)    ABS(ARG) <= XMAX        I1(ARG)           1
 C     BESEI1(ARG)    any real ARG        EXP(-ABS(ARG))*I1(ARG) 2
 C
 C   The main computation evaluates slightly modified forms of
@@ -54,7 +54,7 @@ C
 C   beta   = Radix for the floating-point system
 C   maxexp = Smallest power of beta that overflows
 C   XSMALL = Positive argument such that 1.0 - X = 1.0 to
-C            machine precision for all ABS(X) .LE. XSMALL.
+C            machine precision for all ABS(X) <= XSMALL.
 C   XINF =   Largest positive machine number; approximately
 C            beta**maxexp
 C   XMAX =   Largest argument acceptable to BESI1;  Solution to
@@ -98,7 +98,7 @@ C*******************************************************************
 C
 C Error returns
 C
-C  The program returns the value XINF for ABS(ARG) .GT. XMAX.
+C  The program returns the value XINF for ABS(ARG) > XMAX.
 C
 C
 C Intrinsic functions required are:
@@ -135,7 +135,7 @@ C--------------------------------------------------------------------
 CS    DATA XSMALL/2.98E-8/,XINF/3.4E38/,XMAX/91.906E0/
       DATA XSMALL/5.55D-17/,XINF/1.79D308/,XMAX/713.987D0/
 C--------------------------------------------------------------------
-C  Coefficients for XSMALL .LE. ABS(ARG) .LT. 15.0
+C  Coefficients for XSMALL <= ABS(ARG) < 15.0
 C--------------------------------------------------------------------
 CS    DATA P/-1.9705291802535139930E-19,-6.5245515583151902910E-16,
 CS   1       -1.1928788903603238754E-12,-1.4831904935994647675E-09,
@@ -160,7 +160,7 @@ CS   2       -1.3218168307321442305E+15/
      1       -8.0059518998619764991D+09, 4.8544714258273622913D+12,
      2       -1.3218168307321442305D+15/
 C--------------------------------------------------------------------
-C  Coefficients for 15.0 .LE. ABS(ARG)
+C  Coefficients for 15.0 <= ABS(ARG)
 C--------------------------------------------------------------------
 CS    DATA PP/-6.0437159056137600000E-02, 4.5748122901933459000E-01,
 CS   1        -4.2843766903304806403E-01, 9.7356000150886612134E-02,
@@ -180,14 +180,14 @@ CS    DATA PBAR/3.98437500E-01/
       DATA PBAR/3.98437500D-01/
 C--------------------------------------------------------------------
       X = ABS(ARG)
-      IF (X .LT. XSMALL) THEN
+      IF (X < XSMALL) THEN
 C--------------------------------------------------------------------
-C  Return for ABS(ARG) .LT. XSMALL
+C  Return for ABS(ARG) < XSMALL
 C--------------------------------------------------------------------
             RESULT = HALF * X
-         ELSE IF (X .LT. 15) THEN
+         ELSE IF (X < 15) THEN
 C--------------------------------------------------------------------
-C  XSMALL .LE. ABS(ARG) .LT. 15.0
+C  XSMALL <= ABS(ARG) < 15.0
 C--------------------------------------------------------------------
             XX = X * X
             SUMP = P(1)
@@ -198,12 +198,12 @@ C--------------------------------------------------------------------
             SUMQ = ((((XX+Q(1))*XX+Q(2))*XX+Q(3))*XX+Q(4))
      1           *XX+Q(5)
             RESULT = (SUMP / SUMQ) * X
-            IF (JINT .EQ. 2) RESULT = RESULT * EXP(-X)
-         ELSE IF ((JINT .EQ. 1) .AND. (X .GT. XMAX)) THEN
+            IF (JINT == 2) RESULT = RESULT * EXP(-X)
+         ELSE IF ((JINT == 1) .AND. (X > XMAX)) THEN
                   RESULT = XINF
          ELSE
 C--------------------------------------------------------------------
-C  15.0 .LE. ABS(ARG)
+C  15.0 <= ABS(ARG)
 C--------------------------------------------------------------------
             XX = 1 / X - REC15
             SUMP = ((((((PP(1)*XX+PP(2))*XX+PP(3))*XX+
@@ -211,13 +211,13 @@ C--------------------------------------------------------------------
             SUMQ = (((((XX+QQ(1))*XX+QQ(2))*XX+QQ(3))*XX+
      1           QQ(4))*XX+QQ(5))*XX+QQ(6)
             RESULT = SUMP / SUMQ
-            IF (JINT .NE. 1) THEN
+            IF (JINT /= 1) THEN
                   RESULT = (RESULT + PBAR) / SQRT(X)
                ELSE
 C--------------------------------------------------------------------
 C  Calculation reformulated to avoid premature overflow
 C--------------------------------------------------------------------
-                  IF (X .GT. XMAX-15) THEN
+                  IF (X > XMAX-15) THEN
                         A = EXP(X-FORTY)
                         B = EXP40
                      ELSE
@@ -227,11 +227,11 @@ C--------------------------------------------------------------------
                   RESULT = ((RESULT * A + PBAR * A) /
      1                  SQRT(X)) * B
 C--------------------------------------------------------------------
-C  Error return for ABS(ARG) .GT. XMAX
+C  Error return for ABS(ARG) > XMAX
 C--------------------------------------------------------------------
             END IF
       END IF
-      IF (ARG .LT. 0) RESULT = -RESULT
+      IF (ARG < 0) RESULT = -RESULT
       RETURN
 C----------- Last line of CALCI1 -----------
       END SUBROUTINE CALCI1
@@ -241,7 +241,7 @@ C--------------------------------------------------------------------
 C
 C This long precision subprogram computes approximate values for
 C   modified Bessel functions of the first kind of order one for
-C   arguments ABS(ARG) .LE. XMAX  (see comments heading CALCI1).
+C   arguments ABS(ARG) <= XMAX  (see comments heading CALCI1).
 C
 C--------------------------------------------------------------------
       INTEGER JINT

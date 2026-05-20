@@ -1,3 +1,7 @@
 name = "rpncalc"
 description = "Interactive RPN calculator"
 version = "1.4.1"
+
+[extra.fortitude.check]
+ignore = ["C003", "S231", "S241", "S061",
+"C011"]

@@ -3,6 +3,9 @@
 
       implicit none
 
+      private
+      public :: rkbesl
+
       contains
 
       SUBROUTINE RKBESL(X,ALPHA,NB,IZE,BK,NCALC)
@@ -23,8 +26,8 @@ C         are to be calculated.  If K's are to be calculated,
 C         X must not be greater than XMAX (see below).
 C ALPHA - Working precision fractional part of order for which
 C         K's or exponentially scaled K's (K*EXP(X)) are
-C         to be calculated.  0 .LE. ALPHA .LT. 1.0.
-C NB    - Integer number of functions to be calculated, NB .GT. 0.
+C         to be calculated.  0 <= ALPHA < 1.0.
+C NB    - Integer number of functions to be calculated, NB > 0.
 C         The first function calculated is of order ALPHA, and the
 C         last is of order (NB - 1 + ALPHA).
 C IZE   - Integer type.  IZE = 1 if unscaled K's are to be calculated,
@@ -33,8 +36,8 @@ C BK    - Working precision output vector of length NB.  If the
 C         routine terminates normally (NCALC=NB), the vector BK
 C         contains the functions K(ALPHA,X), ... , K(NB-1+ALPHA,X),
 C         or the corresponding exponentially scaled functions.
-C         If (0 .LT. NCALC .LT. NB), BK(I) contains correct function
-C         values for I .LE. NCALC, and contains the ratios
+C         If (0 < NCALC < NB), BK(I) contains correct function
+C         values for I <= NCALC, and contains the ratios
 C         K(ALPHA+I-1,X)/K(ALPHA+I-2,X) for the rest of the array.
 C NCALC - Integer output variable indicating possible errors.
 C         Before using the vector BK, the user should check that
@@ -51,7 +54,7 @@ C   beta   = Radix for the floating-point system
 C   minexp = Smallest representable power of beta
 C   maxexp = Smallest power of beta that overflows
 C   EPS    = The smallest positive floating-point number such that
-C            1.0+EPS .GT. 1.0
+C            1.0+EPS > 1.0
 C   XMAX   = Upper limit on the magnitude of X when IZE=1;  Solution
 C            to equation:
 C               W(X) * (1-1/8X+9/128X**2) = beta**minexp
@@ -99,21 +102,21 @@ C*******************************************************************
 C
 C Error returns
 C
-C  In case of an error, NCALC .NE. NB, and not all K's are
+C  In case of an error, NCALC /= NB, and not all K's are
 C  calculated to the desired accuracy.
 C
-C  NCALC .LT. -1:  An argument is out of range. For example,
-C       NB .LE. 0, IZE is not 1 or 2, or IZE=1 and ABS(X) .GE.
+C  NCALC < -1:  An argument is out of range. For example,
+C       NB <= 0, IZE is not 1 or 2, or IZE=1 and ABS(X) >=
 C       XMAX.  In this case, the B-vector is not calculated,
-C       and NCALC is set to MIN0(NB,0)-2  so that NCALC .NE. NB.
-C  NCALC = -1:  Either  K(ALPHA,X) .GE. XINF  or
-C       K(ALPHA+NB-1,X)/K(ALPHA+NB-2,X) .GE. XINF.  In this case,
+C       and NCALC is set to MIN0(NB,0)-2  so that NCALC /= NB.
+C  NCALC = -1:  Either  K(ALPHA,X) >= XINF  or
+C       K(ALPHA+NB-1,X)/K(ALPHA+NB-2,X) >= XINF.  In this case,
 C       the B-vector is not calculated.  Note that again
-C       NCALC .NE. NB.
+C       NCALC /= NB.
 C
-C  0 .LT. NCALC .LT. NB: Not all requested function values could
+C  0 < NCALC < NB: Not all requested function values could
 C       be calculated accurately.  BK(I) contains correct function
-C       values for I .LE. NCALC, and contains the ratios
+C       values for I <= NCALC, and contains the ratios
 C       K(ALPHA+I-1,X)/K(ALPHA+I-2,X) for the rest of the array.
 C
 C
@@ -225,13 +228,13 @@ C---------------------------------------------------------------------
       EX = X
       ENU = ALPHA
       NCALC = MIN(NB,0)-2
-      IF ((NB .GT. 0) .AND. ((ENU .GE. ZERO) .AND. (ENU .LT. ONE))
-     1     .AND. ((IZE .GE. 1) .AND. (IZE .LE. 2)) .AND.
-     2     ((IZE .NE. 1) .OR. (EX .LE. XMAX)) .AND.
-     3     (EX .GT. ZERO))  THEN
+      IF ((NB > 0) .AND. ((ENU >= ZERO) .AND. (ENU < ONE))
+     1     .AND. ((IZE >= 1) .AND. (IZE <= 2)) .AND.
+     2     ((IZE /= 1) .OR. (EX <= XMAX)) .AND.
+     3     (EX > ZERO))  THEN
             K = 0
-            IF (ENU .LT. SQXMIN) ENU = ZERO
-            IF (ENU .GT. HALF) THEN
+            IF (ENU < SQXMIN) ENU = ZERO
+            IF (ENU > HALF) THEN
                   K = 1
                   ENU = ENU - ONE
             END IF
@@ -239,7 +242,7 @@ C---------------------------------------------------------------------
             IEND = NB+K-1
             C = ENU*ENU
             D3 = -C
-            IF (EX .LE. ONE) THEN
+            IF (EX <= ONE) THEN
 C---------------------------------------------------------------------
 C  Calculation of P0 = GAMMA(1+ALPHA) * (2/X)**ALPHA
 C                 Q0 = GAMMA(1-ALPHA) * (X/2)**ALPHA
@@ -270,7 +273,7 @@ C---------------------------------------------------------------------
                      D1 = C*D1+R(I)
                      T1 = C*T1+S(I)
    20             CONTINUE
-                  IF (ABS(F1) .LE. HALF) THEN
+                  IF (ABS(F1) <= HALF) THEN
                         F1 = F1*F1
                         D2 = ZERO
                         DO 30 I = 1,6
@@ -281,43 +284,43 @@ C---------------------------------------------------------------------
                         D2 = SINH(F1)/ENU
                   END IF
                   F0 = D2-ENU*D1/(T1*P0)
-                  IF (EX .LE. TINYX) THEN
+                  IF (EX <= TINYX) THEN
 C--------------------------------------------------------------------
-C  X.LE.1.0E-10
+C  X<=1.0E-10
 C  Calculation of K(ALPHA,X) and X*K(ALPHA+1,X)/K(ALPHA,X)
 C--------------------------------------------------------------------
                         BK(1) = F0+EX*F0
-                        IF (IZE .EQ. 1) BK(1) = BK(1)-EX*BK(1)
+                        IF (IZE == 1) BK(1) = BK(1)-EX*BK(1)
                         RATIO = P0/F0
                         C = EX*XINF
-                        IF (K .NE. 0) THEN
+                        IF (K /= 0) THEN
 C--------------------------------------------------------------------
 C  Calculation of K(ALPHA,X) and X*K(ALPHA+1,X)/K(ALPHA,X),
-C  ALPHA .GE. 1/2
+C  ALPHA >= 1/2
 C--------------------------------------------------------------------
                               NCALC = -1
-                              IF (BK(1) .GE. C/RATIO) GO TO 500
+                              IF (BK(1) >= C/RATIO) goto 500
                               BK(1) = RATIO*BK(1)/EX
                               TWONU = TWONU+TWO
                               RATIO = TWONU
                         END IF
                         NCALC = 1
-                        IF (NB .EQ. 1) GO TO 500
+                        IF (NB == 1) goto 500
 C--------------------------------------------------------------------
 C  Calculate  K(ALPHA+L,X)/K(ALPHA+L-1,X),  L  =  1, 2, ... , NB-1
 C--------------------------------------------------------------------
                         NCALC = -1
                         DO 80 I = 2,NB
-                           IF (RATIO .GE. C) GO TO 500
+                           IF (RATIO >= C) goto 500
                            BK(I) = RATIO/EX
                            TWONU = TWONU+TWO
                            RATIO = TWONU
    80                   CONTINUE
                         NCALC = 1
-                        GO TO 420
+                        goto 420
                      ELSE
 C--------------------------------------------------------------------
-C  1.0E-10 .LT. X .LE. 1.0
+C  1.0E-10 < X <= 1.0
 C--------------------------------------------------------------------
                         C = ONE
                         X2BY4 = EX*EX/FOUR
@@ -340,37 +343,37 @@ C--------------------------------------------------------------------
                         T2 = C*(P0-D2*F0)
                         BK1 = BK1+T1
                         BK2 = BK2+T2
-                        IF ((ABS(T1/(F1+BK1)) .GT. EPS) .OR.
-     1                     (ABS(T2/(F2+BK2)) .GT. EPS))  GO TO 100
+                        IF ((ABS(T1/(F1+BK1)) > EPS) .OR.
+     1                     (ABS(T2/(F2+BK2)) > EPS))  goto 100
                         BK1 = F1+BK1
                         BK2 = TWO*(F2+BK2)/EX
-                        IF (IZE .EQ. 2) THEN
+                        IF (IZE == 2) THEN
                               D1 = EXP(EX)
                               BK1 = BK1*D1
                               BK2 = BK2*D1
                         END IF
                         WMINF = ESTF(1)*EX+ESTF(2)
                   END IF
-               ELSE IF (EPS*EX .GT. ONE) THEN
+               ELSE IF (EPS*EX > ONE) THEN
 C--------------------------------------------------------------------
-C  X .GT. ONE/EPS
+C  X > ONE/EPS
 C--------------------------------------------------------------------
                   NCALC = NB
                   BK1 = ONE / (D*SQRT(EX))
                   DO 110 I = 1, NB
                      BK(I) = BK1
   110             CONTINUE
-                  GO TO 500
+                  goto 500
                ELSE
 C--------------------------------------------------------------------
-C  X .GT. 1.0
+C  X > 1.0
 C--------------------------------------------------------------------
                   TWOX = EX+EX
                   BLPHA = ZERO
                   RATIO = ZERO
-                  IF (EX .LE. FOUR) THEN
+                  IF (EX <= FOUR) THEN
 C--------------------------------------------------------------------
-C  Calculation of K(ALPHA+1,X)/K(ALPHA,X),  1.0 .LE. X .LE. 4.0
+C  Calculation of K(ALPHA+1,X)/K(ALPHA,X),  1.0 <= X <= 4.0
 C--------------------------------------------------------------------
                         D2 = AINT(ESTM(1)/EX+ESTM(2))
                         M = INT(D2)
@@ -411,12 +414,12 @@ C--------------------------------------------------------------------
                         P0 = EXP(C*(A+C*(P(8)-C*D1/T1)-LOG(EX)))/EX
                         F2 = (C+HALF-RATIO)*F1/EX
                         BK1 = P0+(D3*F0-F2+F0+BLPHA)/(F2+F1+F0)*P0
-                        IF (IZE .EQ. 1) BK1 = BK1*EXP(-EX)
+                        IF (IZE == 1) BK1 = BK1*EXP(-EX)
                         WMINF = ESTF(3)*EX+ESTF(4)
                      ELSE
 C--------------------------------------------------------------------
 C  Calculation of K(ALPHA,X) and K(ALPHA+1,X)/K(ALPHA,X), by backward
-C  recurrence, for  X .GT. 4.0
+C  recurrence, for  X > 4.0
 C--------------------------------------------------------------------
                         DM = AINT(ESTM(5)/EX+ESTM(6))
                         M = INT(DM)
@@ -431,7 +434,7 @@ C--------------------------------------------------------------------
                            BLPHA = (RATIO+RATIO*BLPHA)/DM
   160                   CONTINUE
                         BK1 = ONE/((D+D*BLPHA)*SQRT(EX))
-                        IF (IZE .EQ. 1) BK1 = BK1*EXP(-EX)
+                        IF (IZE == 1) BK1 = BK1*EXP(-EX)
                         WMINF = ESTF(5)*(EX-ABS(EX-ESTF(7)))+ESTF(6)
                   END IF
 C--------------------------------------------------------------------
@@ -446,29 +449,29 @@ C  K(ALPHA+I,X)/K(ALPHA+I-1,X), I  =  NCALC, NCALC+1, ... , NB-1
 C--------------------------------------------------------------------
             NCALC = NB
             BK(1) = BK1
-            IF (IEND .EQ. 0) GO TO 500
+            IF (IEND == 0) goto 500
             J = 2-K
-            IF (J .GT. 0) BK(J) = BK2
-            IF (IEND .EQ. 1) GO TO 500
+            IF (J > 0) BK(J) = BK2
+            IF (IEND == 1) goto 500
             M = MIN(INT(WMINF-ENU),IEND)
             DO 190 I = 2,M
                T1 = BK1
                BK1 = BK2
                TWONU = TWONU+TWO
-               IF (EX .LT. ONE) THEN
-                     IF (BK1 .GE. (XINF/TWONU)*EX) GO TO 195
-                     GO TO 187
+               IF (EX < ONE) THEN
+                     IF (BK1 >= (XINF/TWONU)*EX) goto 195
+                     goto 187
                   ELSE
-                     IF (BK1/EX .GE. XINF/TWONU) GO TO 195
+                     IF (BK1/EX >= XINF/TWONU) goto 195
                END IF
   187          CONTINUE
                BK2 = TWONU/EX*BK1+T1
                ITEMP = I
                J = J+1
-               IF (J .GT. 0) BK(J) = BK2
+               IF (J > 0) BK(J) = BK2
   190       CONTINUE
   195       M = ITEMP
-            IF (M .EQ. IEND) GO TO 500
+            IF (M == IEND) goto 500
             RATIO = BK2/BK1
             MPLUS1 = M+1
             NCALC = -1
@@ -476,19 +479,19 @@ C--------------------------------------------------------------------
                TWONU = TWONU+TWO
                RATIO = TWONU/EX+ONE/RATIO
                J = J+1
-               IF (J .GT. 1) THEN
+               IF (J > 1) THEN
                      BK(J) = RATIO
                   ELSE
-                     IF (BK2 .GE. XINF/RATIO) GO TO 500
+                     IF (BK2 >= XINF/RATIO) goto 500
                      BK2 = RATIO*BK2
                END IF
   410       CONTINUE
             NCALC = MAX(MPLUS1-K,1)
-            IF (NCALC .EQ. 1) BK(1) = BK2
-            IF (NB .EQ. 1) GO TO 500
+            IF (NCALC == 1) BK(1) = BK2
+            IF (NB == 1) goto 500
   420       J = NCALC+1
             DO 430 I = J,NB
-               IF (BK(NCALC) .GE. XINF/BK(I)) GO TO 500
+               IF (BK(NCALC) >= XINF/BK(I)) goto 500
                BK(I) = BK(NCALC)*BK(I)
                NCALC = I
   430       CONTINUE

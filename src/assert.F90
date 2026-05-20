@@ -145,7 +145,7 @@ if (isclose(actual,desired,rtol,atol,equal_nan)) return
 msg = 'MISMATCH'
 if (present(err_msg)) msg = err_msg
 
-write(stderr,*) msg,': actual',actual,'desired',desired
+write(stderr, *) msg,': actual',actual,'desired',desired
 
 error stop
 

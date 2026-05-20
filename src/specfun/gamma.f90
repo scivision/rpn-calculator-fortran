@@ -4,6 +4,9 @@ use assert, only: wp
 
 implicit none
 
+private
+public :: beta, cbeta, rbeta, cgamma, psi
+
 contains
 
 
@@ -123,7 +126,7 @@ elemental real(wp) FUNCTION PSI(XX)
 
 real(wp), intent(in) :: xx
 
-INTEGER I,N,NQ
+INTEGER :: I,N,NQ
 
 real(wp) :: AUG,DEN,SGN,UPPER,W,X,Z
 
@@ -174,22 +177,22 @@ AUG = 0
 !----------------------------------------------------------------------
 !  Check for valid arguments, then branch to appropriate algorithm
 !----------------------------------------------------------------------
-IF ((-X .GE. XMAX1) .OR. (W .LT. XMIN1)) THEN
-      GO TO 410
+IF ((-X >= XMAX1) .OR. (W < XMIN1)) THEN
+      goto 410
       ELSE IF (X >= 0.5_wp) THEN
-      GO TO 200
+      goto 200
 !----------------------------------------------------------------------
 !  X < 0.5, use reflection formula: psi(1-x) = psi(x) + pi * cot(pi*x)
 !     Use 1/X for PI*COTAN(PI*X)  when  XMIN1 < |X| <= XSMALL.
 !----------------------------------------------------------------------
-      ELSE IF (W .LE. XSMALL) THEN
+      ELSE IF (W <= XSMALL) THEN
       AUG = -1 / X
-      GO TO 150
+      goto 150
 END IF
 !----------------------------------------------------------------------
 !  Argument reduction for cot
 !----------------------------------------------------------------------
-  100 IF (X .LT. 0) THEN
+  100 IF (X < 0) THEN
             SGN = PIOV4
          ELSE
             SGN = -PIOV4
@@ -203,24 +206,24 @@ END IF
 !     quadrant and determine the sign.
 !----------------------------------------------------------------------
       N = NQ / 2
-      IF ((N+N) .NE. NQ) W = 1 - W
+      IF ((N+N) /= NQ) W = 1 - W
       Z = PIOV4 * W
-      IF (MOD(N,2) .NE. 0) SGN = - SGN
+      IF (MOD(N,2) /= 0) SGN = - SGN
 !----------------------------------------------------------------------
 !  determine the final value for  -pi * cotan(pi*x)
 !----------------------------------------------------------------------
       N = (NQ + 1) / 2
-      IF (MOD(N,2) .EQ. 0) THEN
+      IF (MOD(N,2) == 0) THEN
 !----------------------------------------------------------------------
 !  Check for singularity
 !----------------------------------------------------------------------
-            IF (Z .EQ. 0) GO TO 410
+            IF (Z == 0) goto 410
             AUG = SGN * (4 / TAN(Z))
          ELSE
             AUG = SGN * (4 * TAN(Z))
       END IF
   150 X = 1 - X
-  200 IF (X > 3) GO TO 300
+  200 IF (X > 3) goto 300
 !----------------------------------------------------------------------
 !  0.5 <= X <= 3.0
 !----------------------------------------------------------------------
@@ -233,11 +236,11 @@ END IF
       DEN = (UPPER + P1(9)) / (DEN + Q1(8))
       X = (X-X01/X01D) - X02
       PSI = DEN * X + AUG
-      GO TO 500
+      goto 500
 !----------------------------------------------------------------------
 !  3.0 < X
 !----------------------------------------------------------------------
-  300 IF (X .LT. XLARGE) THEN
+  300 IF (X < XLARGE) THEN
          W = 1 / (X * X)
          DEN = W
          UPPER = P2(1) * W
@@ -248,12 +251,12 @@ END IF
          AUG = (UPPER + P2(7)) / (DEN + Q2(6)) - 0.5_wp / X + AUG
       END IF
       PSI = AUG + LOG(X)
-      GO TO 500
+      goto 500
 !----------------------------------------------------------------------
 !  Error return
 !----------------------------------------------------------------------
   410 PSI = XINF
-      IF (X .GT. 0) PSI = -XINF
+      IF (X > 0) PSI = -XINF
   500 RETURN
 !---------- Last card of PSI ----------
       END function psi
@@ -282,18 +285,18 @@ END IF
       X = Z%RE
       Y = Z%IM
 
-      IF (Z .EQ. (0.0D0,0.0D0)) THEN
+      IF (Z == (0.0D0,0.0D0)) THEN
          ! write(stderr, *) '  CGAMMA Error.'
          R = (0.0D0,0.0D0)
          RETURN
       END IF
 
-      IF (Y .EQ. 0.0D0) THEN                                                        ! if real Z
+      IF (Y == 0.0D0) THEN                                                        ! if real Z
          R = CMPLX(GAMMA(X),0.0D0, wp)
          RETURN
       END IF
 
-      IF (X .EQ. 0.0D0) GO TO 100                                                   ! branch for imaginary Z
+      IF (X == 0.0D0) goto 100                                                   ! branch for imaginary Z
 
 !
 !     Complex Z
@@ -305,10 +308,10 @@ END IF
       J = 0
       DO
          SUM = SUM + Y/(real(j,wp)+X) - ATAN2(Y, real(J,wp)+X)
-         IF (ABS((SUM-PSUM)/SUM) .LE. EPS) EXIT
+         IF (ABS((SUM-PSUM)/SUM) <= EPS) EXIT
          PSUM = SUM
          J = J + 1
-         IF (J .LT. 0) EXIT
+         IF (J < 0) EXIT
       END DO
 
       THETA = Y*PSI(X) + SUM
@@ -319,10 +322,10 @@ END IF
       J = 0
       DO
          PROD = PROD * ABS(real(j,wp)+X)/SQRT(Y**2+(real(J,wp)+X)**2)
-         IF (ABS((PROD-PPROD)/PROD) .LE. EPS) EXIT
+         IF (ABS((PROD-PPROD)/PROD) <= EPS) EXIT
          PPROD = PROD
          J = J + 1
-         IF (J .LT. 0) EXIT
+         IF (J < 0) EXIT
       END DO
 
       R = CMPLX(COS(THETA),SIN(THETA), wp) * ABS(gamma(X)) * PROD
@@ -339,10 +342,10 @@ END IF
       J = 1
       DO
          SUM = SUM + Y/real(j,wp) - ATAN2(Y,real(j,wp))
-         IF (ABS((SUM-PSUM)/SUM) .LE. EPS) EXIT
+         IF (ABS((SUM-PSUM)/SUM) <= EPS) EXIT
          PSUM = SUM
          J = J + 1
-         IF (J .LT. 0) EXIT
+         IF (J < 0) EXIT
       END DO
 
       THETA = -EULER*Y + SUM

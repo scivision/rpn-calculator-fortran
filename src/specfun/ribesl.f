@@ -3,6 +3,9 @@
 
       implicit none
 
+      private
+      public :: ribesl
+
       contains
 
       SUBROUTINE RIBESL(X,ALPHA,NB,IZE,B,NCALC)
@@ -21,8 +24,8 @@ C         are to be calculated.  If I's are to be calculated,
 C         X must be less than EXPARG (see below).
 C ALPHA - Working precision fractional part of order for which
 C         I's or exponentially scaled I's (I*EXP(-X)) are
-C         to be calculated.  0 .LE. ALPHA .LT. 1.0.
-C NB    - Integer number of functions to be calculated, NB .GT. 0.
+C         to be calculated.  0 <= ALPHA < 1.0.
+C NB    - Integer number of functions to be calculated, NB > 0.
 C         The first function calculated is of order ALPHA, and the
 C         last is of order (NB - 1 + ALPHA).
 C IZE   - Integer type.  IZE = 1 if unscaled I's are to calculated,
@@ -57,7 +60,7 @@ C   ENTEN  = 10.0 ** K, where K is the largest integer such that
 C            ENTEN is machine-representable in working precision
 C   ENSIG  = 10.0 ** NSIG
 C   RTNSIG = 10.0 ** (-K) for the smallest integer K such that
-C            K .GE. NSIG/4
+C            K >= NSIG/4
 C   ENMTEN = Smallest ABS(X) such that X/4 does not underflow
 C   XLARGE = Upper limit on the magnitude of X when IZE=2.  Bear
 C            in mind that if ABS(X)=N, then at least N iterations
@@ -120,20 +123,20 @@ C*******************************************************************
 C
 C Error returns
 C
-C  In case of an error,  NCALC .NE. NB, and not all I's are
+C  In case of an error,  NCALC /= NB, and not all I's are
 C  calculated to the desired accuracy.
 C
-C  NCALC .LT. 0:  An argument is out of range. For example,
-C     NB .LE. 0, IZE is not 1 or 2, or IZE=1 and ABS(X) .GE. EXPARG.
+C  NCALC < 0:  An argument is out of range. For example,
+C     NB <= 0, IZE is not 1 or 2, or IZE=1 and ABS(X) >= EXPARG.
 C     In this case, the B-vector is not calculated, and NCALC is
-C     set to MIN0(NB,0)-1 so that NCALC .NE. NB.
+C     set to MIN0(NB,0)-1 so that NCALC /= NB.
 C
-C  NB .GT. NCALC .GT. 0: Not all requested function values could
+C  NB > NCALC > 0: Not all requested function values could
 C     be calculated accurately.  This usually occurs because NB is
 C     much larger than ABS(X).  In this case, B(N) is calculated
-C     to the desired accuracy for N .LE. NCALC, but precision
-C     is lost for NCALC .LT. N .LE. NB.  If B(N) does not vanish
-C     for N .GT. NCALC (because it is too small to be represented),
+C     to the desired accuracy for N <= NCALC, but precision
+C     is lost for NCALC < N <= NB.  If B(N) does not vanish
+C     for N > NCALC (because it is too small to be represented),
 C     and B(N)/B(NCALC) = 10**(-K), then only the first NSIG-K
 C     significant figures of B(N) can be trusted.
 C
@@ -206,16 +209,16 @@ CD    FUNC(X) = DGAMMA(X)
 C-------------------------------------------------------------------
 C Check for X, NB, OR IZE out of range.
 C-------------------------------------------------------------------
-      IF ((NB.GT.0) .AND. (X .GE. ZERO) .AND.
-     1    (ALPHA .GE. ZERO) .AND. (ALPHA .LT. ONE) .AND.
-     2    (((IZE .EQ. 1) .AND. (X .LE. EXPARG)) .OR.
-     3     ((IZE .EQ. 2) .AND. (X .LE. XLARGE)))) THEN
+      IF ((NB>0) .AND. (X >= ZERO) .AND.
+     1    (ALPHA >= ZERO) .AND. (ALPHA < ONE) .AND.
+     2    (((IZE == 1) .AND. (X <= EXPARG)) .OR.
+     3     ((IZE == 2) .AND. (X <= XLARGE)))) THEN
 C-------------------------------------------------------------------
 C Use 2-term ascending series for small X
 C-------------------------------------------------------------------
             NCALC = NB
             MAGX = INT(X)
-            IF (X .GE. RTNSIG) THEN
+            IF (X >= RTNSIG) THEN
 C-------------------------------------------------------------------
 C Initialize the forward sweep, the P-sequence of Olver
 C-------------------------------------------------------------------
@@ -228,12 +231,12 @@ C-------------------------------------------------------------------
 C Calculate general significance test
 C-------------------------------------------------------------------
                   TEST = ENSIG + ENSIG
-                  IF (2*MAGX .GT. 5*NSIG) THEN
+                  IF (2*MAGX > 5*NSIG) THEN
                         TEST = SQRT(TEST*P)
                      ELSE
                         TEST = TEST / CONST**MAGX
                   END IF
-                  IF (NBMX .GE. 3) THEN
+                  IF (NBMX >= 3) THEN
 C-------------------------------------------------------------------
 C Calculate P-sequence until N = NB-1.  Check for possible overflow.
 C-------------------------------------------------------------------
@@ -246,10 +249,10 @@ C-------------------------------------------------------------------
                         POLD = PLAST
                         PLAST = P
                         P = EN * PLAST/X + POLD
-                        IF (P .GT. TOVER) THEN
+                        IF (P > TOVER) THEN
 C-------------------------------------------------------------------
 C To avoid overflow, divide P-sequence by TOVER.  Calculate
-C P-sequence until ABS(P) .GT. 1.
+C P-sequence until ABS(P) > 1.
 C-------------------------------------------------------------------
                            TOVER = ENTEN
                            P = P / TOVER
@@ -262,7 +265,7 @@ C-------------------------------------------------------------------
                               POLD = PLAST
                               PLAST = P
                               P = EN * PLAST/X + POLD
-                           IF (P .LE. ONE) GO TO 60
+                           IF (P <= ONE) goto 60
                            TEMPB = EN / X
 C-------------------------------------------------------------------
 C Calculate backward test, and find NCALC, the highest N
@@ -279,17 +282,17 @@ C-------------------------------------------------------------------
                               POLD = PSAVEL
                               PSAVEL = PSAVE
                               PSAVE = EN * PSAVEL/X + POLD
-                              IF (PSAVE*PSAVEL .GT. TEST) GO TO 90
+                              IF (PSAVE*PSAVEL > TEST) goto 90
    80                      CONTINUE
                            NCALC = NEND + 1
    90                      NCALC = NCALC - 1
-                           GO TO 120
+                           goto 120
                         END IF
   100                CONTINUE
                      N = NEND
                      EN = dble(N+N) + (ALPHA+ALPHA)
 C-------------------------------------------------------------------
-C Calculate special significance test for NBMX .GT. 2.
+C Calculate special significance test for NBMX > 2.
 C-------------------------------------------------------------------
                      TEST = MAX(TEST,SQRT(PLAST*ENSIG)*SQRT(P+P))
                   END IF
@@ -301,7 +304,7 @@ C-------------------------------------------------------------------
                      POLD = PLAST
                      PLAST = P
                      P = EN * PLAST/X + POLD
-                  IF (P .LT. TEST) GO TO 110
+                  IF (P < TEST) goto 110
 C-------------------------------------------------------------------
 C Initialize the backward recursion and the normalization sum.
 C-------------------------------------------------------------------
@@ -314,9 +317,9 @@ C-------------------------------------------------------------------
                   EMP2AL = (EM - ONE) + (ALPHA + ALPHA)
                   SUM = TEMPA * EMPAL * EMP2AL / EM
                   NEND = N - NB
-                  IF (NEND .LT. 0) THEN
+                  IF (NEND < 0) THEN
 C-------------------------------------------------------------------
-C N .LT. NB, so store B(N) and set higher orders to zero.
+C N < NB, so store B(N) and set higher orders to zero.
 C-------------------------------------------------------------------
                         B(N) = TEMPA
                         NEND = -NEND
@@ -324,7 +327,7 @@ C-------------------------------------------------------------------
                           B(N+L) = ZERO
                         enddo
                      ELSE
-                        IF (NEND .GT. 0) THEN
+                        IF (NEND > 0) THEN
 C-------------------------------------------------------------------
 C Recur backward via difference equation, calculating (but
 C not storing) B(N), until N = NB.
@@ -337,8 +340,8 @@ C-------------------------------------------------------------------
                               TEMPA = (EN*TEMPB) / X + TEMPC
                               EM = EM - ONE
                               EMP2AL = EMP2AL - ONE
-                              IF (N .EQ. 1) GO TO 150
-                              IF (N .EQ. 2) EMP2AL = ONE
+                              IF (N == 1) goto 150
+                              IF (N == 2) EMP2AL = ONE
                               EMPAL = EMPAL - ONE
                               SUM = (SUM + TEMPA*EMPAL) * EMP2AL / EM
   140                      CONTINUE
@@ -347,9 +350,9 @@ C-------------------------------------------------------------------
 C Store B(NB)
 C-------------------------------------------------------------------
   150                   B(N) = TEMPA
-                        IF (NB .LE. 1) THEN
+                        IF (NB <= 1) THEN
                            SUM = (SUM + SUM) + TEMPA
-                           GO TO 230
+                           goto 230
                         END IF
 C-------------------------------------------------------------------
 C Calculate and Store B(NB-1)
@@ -357,15 +360,15 @@ C-------------------------------------------------------------------
                         N = N - 1
                         EN = EN - TWO
                         B(N)  = (EN*TEMPA) / X + TEMPB
-                        IF (N .EQ. 1) GO TO 220
+                        IF (N == 1) goto 220
                         EM = EM - ONE
                         EMP2AL = EMP2AL - ONE
-                        IF (N .EQ. 2) EMP2AL = ONE
+                        IF (N == 2) EMP2AL = ONE
                         EMPAL = EMPAL - ONE
                         SUM = (SUM + B(N)*EMPAL) * EMP2AL / EM
                   END IF
                   NEND = N - 2
-                  IF (NEND .GT. 0) THEN
+                  IF (NEND > 0) THEN
 C-------------------------------------------------------------------
 C Calculate via difference equation and store B(N), until N = 2.
 C-------------------------------------------------------------------
@@ -375,7 +378,7 @@ C-------------------------------------------------------------------
                         B(N) = (EN*B(N+1)) / X +B(N+2)
                         EM = EM - ONE
                         EMP2AL = EMP2AL - ONE
-                        IF (N .EQ. 2) EMP2AL = ONE
+                        IF (N == 2) EMP2AL = ONE
                         EMPAL = EMPAL - ONE
                         SUM = (SUM + B(N)*EMPAL) * EMP2AL / EM
   200                CONTINUE
@@ -388,13 +391,13 @@ C-------------------------------------------------------------------
 C-------------------------------------------------------------------
 C Normalize.  Divide all B(N) by sum.
 C-------------------------------------------------------------------
-  230             IF (ALPHA .NE. ZERO)
+  230             IF (ALPHA /= ZERO)
      1               SUM = SUM * gamma(ONE+ALPHA) * (X*HALF)**(-ALPHA)
-                  IF (IZE .EQ. 1) SUM = SUM * EXP(-X)
+                  IF (IZE == 1) SUM = SUM * EXP(-X)
                   TEMPA = ENMTEN
-                  IF (SUM .GT. ONE) TEMPA = TEMPA * SUM
+                  IF (SUM > ONE) TEMPA = TEMPA * SUM
                   DO 260 N = 1, NB
-                     IF (B(N) .LT. TEMPA) B(N) = ZERO
+                     IF (B(N) < TEMPA) B(N) = ZERO
                      B(N) = B(N) / SUM
   260             CONTINUE
                   RETURN
@@ -405,15 +408,15 @@ C-------------------------------------------------------------------
                   TEMPA = ONE
                   EMPAL = ONE + ALPHA
                   HALFX = ZERO
-                  IF (X .GT. ENMTEN) HALFX = HALF * X
-                IF (ALPHA .NE. ZERO) TEMPA = HALFX**ALPHA / gamma(EMPAL)
-                  IF (IZE .EQ. 2) TEMPA = TEMPA * EXP(-X)
+                  IF (X > ENMTEN) HALFX = HALF * X
+                IF (ALPHA /= ZERO) TEMPA = HALFX**ALPHA / gamma(EMPAL)
+                  IF (IZE == 2) TEMPA = TEMPA * EXP(-X)
                   TEMPB = ZERO
-                  IF ((X+ONE) .GT. ONE) TEMPB = HALFX * HALFX
+                  IF ((X+ONE) > ONE) TEMPB = HALFX * HALFX
                   B(1) = TEMPA + TEMPA*TEMPB / EMPAL
-                  IF ((X .NE. ZERO) .AND. (B(1) .EQ. ZERO)) NCALC = 0
-                  IF (NB .GT. 1) THEN
-                     IF (X .EQ. ZERO) THEN
+                  IF ((X /= ZERO) .AND. (B(1) == ZERO)) NCALC = 0
+                  IF (NB > 1) THEN
+                     IF (X == ZERO) THEN
                            DO 310 N = 2, NB
                               B(N) = ZERO
   310                      CONTINUE
@@ -423,14 +426,14 @@ C Calculate higher-order functions.
 C-------------------------------------------------------------------
                            TEMPC = HALFX
                            TOVER = (ENMTEN + ENMTEN) / X
-                           IF (TEMPB .NE. ZERO) TOVER = ENMTEN / TEMPB
+                           IF (TEMPB /= ZERO) TOVER = ENMTEN / TEMPB
                            DO 340 N = 2, NB
                               TEMPA = TEMPA / EMPAL
                               EMPAL = EMPAL + ONE
                               TEMPA = TEMPA * TEMPC
-                              IF (TEMPA .LE. TOVER*EMPAL) TEMPA = ZERO
+                              IF (TEMPA <= TOVER*EMPAL) TEMPA = ZERO
                               B(N) = TEMPA + TEMPA*TEMPB / EMPAL
-                              IF ((B(N) .EQ. ZERO) .AND. (NCALC .GT. N))
+                              IF ((B(N) == ZERO) .AND. (NCALC > N))
      1                             NCALC = N-1
   340                      CONTINUE
                      END IF

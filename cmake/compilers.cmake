@@ -27,7 +27,7 @@ endif()
 
 check_source_compiles(Fortran "subroutine test()
 complex :: x
-print *, acosh(x)
+x = acosh(x)
 end subroutine"
 f08hyper
 )

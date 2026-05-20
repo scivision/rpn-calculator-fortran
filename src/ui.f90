@@ -1,9 +1,9 @@
 module stackops
 
 use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
-use global
+use global, only : stack_size, stack, cstack, rnstack, rdstack, BASE_MODE, DISP_MODE, DISP_DIGITS, FRACTION_MODE
 use assert, only: wp, isclose
-use funcs
+use funcs, only : frac, frac_to_mixed
 
 implicit none
 private

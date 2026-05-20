@@ -3,6 +3,9 @@
 
       implicit none
 
+      private
+      public :: rybesl
+
       contains
 
       SUBROUTINE RYBESL(X,ALPHA,NB,BY,NCALC)
@@ -17,15 +20,15 @@ C
 C X     - Working precision non-negative real argument for which
 C         Y's are to be calculated.
 C ALPHA - Working precision fractional part of order for which
-C         Y's are to be calculated.  0 .LE. ALPHA .LT. 1.0.
-C NB    - Integer number of functions to be calculated, NB .GT. 0.
+C         Y's are to be calculated.  0 <= ALPHA < 1.0.
+C NB    - Integer number of functions to be calculated, NB > 0.
 C         The first function calculated is of order ALPHA, and the
 C         last is of order (NB - 1 + ALPHA).
 C BY    - Working precision output vector of length NB.  If the
 C         routine terminates normally (NCALC=NB), the vector BY
 C         contains the functions Y(ALPHA,X), ... , Y(NB-1+ALPHA,X),
-C         If (0 .LT. NCALC .LT. NB), BY(I) contains correct function
-C         values for I .LE. NCALC, and contains the ratios
+C         If (0 < NCALC < NB), BY(I) contains correct function
+C         values for I <= NCALC, and contains the ratios
 C         Y(ALPHA+I-1,X)/Y(ALPHA+I-2,X) for the rest of the array.
 C NCALC - Integer output variable indicating possible errors.
 C         Before using the vector BY, the user should check that
@@ -93,19 +96,19 @@ C*******************************************************************
 C
 C Error returns
 C
-C  In case of an error, NCALC .NE. NB, and not all Y's are
+C  In case of an error, NCALC /= NB, and not all Y's are
 C  calculated to the desired accuracy.
 C
-C  NCALC .LT. -1:  An argument is out of range. For example,
-C       NB .LE. 0, IZE is not 1 or 2, or IZE=1 and ABS(X) .GE.
+C  NCALC < -1:  An argument is out of range. For example,
+C       NB <= 0, IZE is not 1 or 2, or IZE=1 and ABS(X) >=
 C       XMAX.  In this case, BY(1) = 0.0, the remainder of the
 C       BY-vector is not calculated, and NCALC is set to
-C       MIN0(NB,0)-2  so that NCALC .NE. NB.
-C  NCALC = -1:  Y(ALPHA,X) .GE. XINF.  The requested function
+C       MIN0(NB,0)-2  so that NCALC /= NB.
+C  NCALC = -1:  Y(ALPHA,X) >= XINF.  The requested function
 C       values are set to 0.0.
-C  1 .LT. NCALC .LT. NB: Not all requested function values could
+C  1 < NCALC < NB: Not all requested function values could
 C       be calculated accurately.  BY(I) contains correct function
-C       values for I .LE. NCALC, and and the remaining NB-NCALC
+C       values for I <= NCALC, and and the remaining NB-NCALC
 C       array elements contain 0.0.
 C
 C
@@ -178,7 +181,7 @@ CS    DATA THRESH,XLARGE/8.0E0,1.0E4/
       DATA THRESH,XLARGE/16.0D0,1.0D8/
 C----------------------------------------------------------------------
 C  Coefficients for Chebyshev polynomial expansion of
-C         1/gamma(1-x), abs(x) .le. .5
+C         1/gamma(1-x), abs(x) <= .5
 C----------------------------------------------------------------------
 CS    DATA CH/-0.67735241822398840964E-23,-0.61455180116049879894E-22,
 CS   1         0.29017595056104745456E-20, 0.13639417919073099464E-18,
@@ -205,16 +208,16 @@ CS   A         0.92187029365045265648E+00/
 C----------------------------------------------------------------------
       EX = X
       ENU = ALPHA
-      IF ((NB .GT. 0) .AND. (X .GE. XMIN) .AND. (EX .LT. XLARGE)
-     1       .AND. (ENU .GE. ZERO) .AND. (ENU .LT. ONE))  THEN
+      IF ((NB > 0) .AND. (X >= XMIN) .AND. (EX < XLARGE)
+     1       .AND. (ENU >= ZERO) .AND. (ENU < ONE))  THEN
             XNA = AINT(ENU+HALF)
             NA = INT(XNA)
-            IF (NA .EQ. 1) ENU = ENU - XNA
-            IF (ENU .EQ. -HALF) THEN
+            IF (NA == 1) ENU = ENU - XNA
+            IF (ENU == -HALF) THEN
                   P = SQ2BPI/SQRT(EX)
                   YA = P * SIN(EX)
                   YA1 = -P * COS(EX)
-               ELSE IF (EX .LT. THREE) THEN
+               ELSE IF (EX < THREE) THEN
 C----------------------------------------------------------------------
 C  Use Temme's scheme for small X
 C----------------------------------------------------------------------
@@ -222,7 +225,7 @@ C----------------------------------------------------------------------
                   D = -LOG(B)
                   F = ENU * D
                   E = B**(-ENU)
-                  IF (ABS(ENU) .LT. DEL) THEN
+                  IF (ABS(ENU) < DEL) THEN
                         C = ONBPI
                      ELSE
                         C = ENU / SIN(ENU*PI)
@@ -230,7 +233,7 @@ C----------------------------------------------------------------------
 C----------------------------------------------------------------------
 C  Computation of sinh(f)/f
 C----------------------------------------------------------------------
-                  IF (ABS(F) .LT. ONE) THEN
+                  IF (ABS(F) < ONE) THEN
                         X2 = F*F
                         EN = TEN9
                         S = ONE
@@ -268,7 +271,7 @@ C----------------------------------------------------------------------
                   P = G*C
                   Q = ONBPI / G
                   C = ENU*PIBY2
-                  IF (ABS(C) .LT. DEL) THEN
+                  IF (ABS(C) < DEL) THEN
                         R = ONE
                      ELSE
                         R = SIN(C)/C
@@ -282,7 +285,7 @@ C----------------------------------------------------------------------
                   EN = ZERO
   100             EN = EN + ONE
                   IF (ABS(G/(ONE+ABS(YA)))
-     1                      + ABS(H/(ONE+ABS(YA1))) .GT. EPS) THEN
+     1                      + ABS(H/(ONE+ABS(YA1))) > EPS) THEN
                         F = (F*EN+P+Q)/(EN*EN-E)
                         C = C * D/EN
                         P = P/(EN-ENU)
@@ -291,11 +294,11 @@ C----------------------------------------------------------------------
                         H = C*P - EN*G
                         YA = YA + G
                         YA1 = YA1+H
-                        GO TO 100
+                        goto 100
                   END IF
                   YA = -YA
                   YA1 = -YA1/B
-               ELSE IF (EX .LT. THRESH) THEN
+               ELSE IF (EX < THRESH) THEN
 C----------------------------------------------------------------------
 C  Use Temme's scheme for moderate X
 C----------------------------------------------------------------------
@@ -308,7 +311,7 @@ C----------------------------------------------------------------------
                   R = ONE + EX*EX
                   S = R
                   EN = TWO
-  200             IF (R*EN*EN .LT. E) THEN
+  200             IF (R*EN*EN < E) THEN
                         EN1 = EN+ONE
                         D = (EN-ONE+C/EN)/S
                         P = (EN+EN-P*D)/EN1
@@ -316,14 +319,14 @@ C----------------------------------------------------------------------
                         S = P*P + Q*Q
                         R = R*S
                         EN = EN1
-                        GO TO 200
+                        goto 200
                   END IF
                   F = P/S
                   P = F
                   G = -Q/S
                   Q = G
   220             EN = EN - ONE
-                  IF (EN .GT. ZERO) THEN
+                  IF (EN > ZERO) THEN
                         R = EN1*(TWO-P)-TWO
                         S = B + EN1*Q
                         D = (EN-ONE+C/EN)/(R*R+S*S)
@@ -333,7 +336,7 @@ C----------------------------------------------------------------------
                         F = P*E - G*Q
                         G = Q*E + P*G
                         EN1 = EN
-                        GO TO 220
+                        goto 220
                   END IF
                   F = ONE + F
                   D = F*F + G*G
@@ -357,7 +360,7 @@ C----------------------------------------------------------------------
                   D1 = AINT(EX/FIVPI)
                   I = INT(D1)
                   DMU = ((EX-ONE5*D1)-D1*PIM5)-(ALPHA+HALF)*PIBY2
-                  IF (I-2*(I/2) .EQ. 0) THEN
+                  IF (I-2*(I/2) == 0) THEN
                         COSMU = COS(DMU)
                         SINMU = SIN(DMU)
                      ELSE
@@ -389,11 +392,11 @@ C----------------------------------------------------------------------
                         DIV = DIV + DDIV
                         TERM = TERM*D1/DIV
                         Q = Q + TERM
-                        IF (ABS(TERM) .LE. EPS) GO TO 320
+                        IF (ABS(TERM) <= EPS) goto 320
   310                CONTINUE
   320                P = P + ONE
                      Q = Q + Q0
-                     IF (K .EQ. 1) THEN
+                     IF (K == 1) THEN
                            YA = SQ2BPI * (P*COSMU-Q*SINMU) / DEN
                         ELSE
                            YA1 = SQ2BPI * (P*COSMU-Q*SINMU) / DEN
@@ -401,10 +404,10 @@ C----------------------------------------------------------------------
                      DMU = DMU + ONE
   350             CONTINUE
             END IF
-            IF (NA .EQ. 1) THEN
+            IF (NA == 1) THEN
                H = TWO*(ENU+ONE)/EX
-               IF (H .GT. ONE) THEN
-                  IF (ABS(YA1) .GT. XINF/H) THEN
+               IF (H > ONE) THEN
+                  IF (ABS(YA1) > XINF/H) THEN
                      H = ZERO
                      YA = ZERO
                   END IF
@@ -418,19 +421,19 @@ C  Now have first one or two Y's
 C----------------------------------------------------------------------
             BY(1) = YA
             BY(2) = YA1
-            IF (YA1 .EQ. ZERO) THEN
+            IF (YA1 == ZERO) THEN
                   NCALC = 1
                ELSE
                   AYE = ONE + ALPHA
                   TWOBYX = TWO/EX
                   NCALC = 2
                   DO 400 I = 3, NB
-                     IF (TWOBYX .LT. ONE) THEN
-                           IF (ABS(BY(I-1))*TWOBYX .GE. XINF/AYE)
-     1                                                     GO TO 450
+                     IF (TWOBYX < ONE) THEN
+                           IF (ABS(BY(I-1))*TWOBYX >= XINF/AYE)
+     1                                                     goto 450
                         ELSE
-                           IF (ABS(BY(I-1)) .GE. XINF/AYE/TWOBYX )
-     1                                                     GO TO 450
+                           IF (ABS(BY(I-1)) >= XINF/AYE/TWOBYX )
+     1                                                     goto 450
                      END IF
                      BY(I) = TWOBYX*AYE*BY(I-1) - BY(I-2)
                      AYE = AYE + ONE

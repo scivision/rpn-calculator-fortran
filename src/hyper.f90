@@ -1,7 +1,7 @@
 module hyper
 
 use assert, only: wp
-use global
+use global, only : BASE_MODE
 
 implicit none
 
@@ -48,7 +48,7 @@ contains
 
 elemental real(wp) FUNCTION TANHC_r (X) RESULT (Y)
 real(wp), INTENT(IN) :: X
-IF (X .EQ. 0._wp) THEN
+IF (X == 0._wp) THEN
    Y = 1
 ELSE
    Y = TANH(X) / X
@@ -58,7 +58,7 @@ END FUNCTION
 
 elemental complex(wp) FUNCTION TANHC_c (Z) RESULT (Y)
 COMPLEX(wp), INTENT(IN) :: Z
-IF (Z .EQ. (0._wp, 0._wp)) THEN
+IF (Z == (0._wp, 0._wp)) THEN
    Y = (1._wp, 0._wp)
 ELSE
    Y = TANH(Z) / Z

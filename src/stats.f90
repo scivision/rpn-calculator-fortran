@@ -2,7 +2,13 @@ module stats
 
 use assert, only: wp
 
+! allow(C121)
+use global
+
 implicit none
+
+private
+public :: CNR, PNR, linreg, clinreg, rlinreg
 
 contains
 
@@ -63,8 +69,6 @@ END FUNCTION PNR
 
 elemental SUBROUTINE LINREG (M, B, R)
 
-USE GLOBAL
-
 real(wp), INTENT(OUT) :: M, B, R
 
 M = (NN*SUMXY-SUMX*SUMY)/(NN*SUMX2-SUMX**2)
@@ -82,8 +86,6 @@ END SUBROUTINE LINREG
 
 elemental SUBROUTINE CLINREG (M, B, R)
 
-USE GLOBAL, only: cnn, csumxy, csumx, csumx2, csumy, csumy2
-
 COMPLEX(wp), INTENT(OUT) :: M, B, R
 
 M = (CNN*CSUMXY-CSUMX*CSUMY)/(CNN*CSUMX2-CSUMX**2)
@@ -99,8 +101,6 @@ END SUBROUTINE CLINREG
 
 elemental SUBROUTINE RLINREG (NM, DM, NB, DB, R)
 use rat, only: rmul, rsub, rdiv
-
-USE GLOBAL
 
 INTEGER, INTENT(OUT) :: NM, DM, NB, DB
 real(wp), INTENT(OUT) :: R

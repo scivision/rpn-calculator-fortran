@@ -2,7 +2,14 @@ module rat
 
 use assert, only: wp, isclose
 
+! allow(C121)
+USE GLOBAL
+
 implicit none
+
+private
+public :: isfrac, isreal, iscomplex, isdigit, lcm, isint, gcd, isrational, dec_to_frac, frac_to_mixed, &
+   ratnorm, rdiv, rmul, rsub, radd, switch_rat_to_real
 
 contains
 
@@ -15,7 +22,7 @@ contains
 elemental logical FUNCTION ISDIGIT (CH)
 CHARACTER, INTENT(IN) :: CH
 
-isdigit = (CH .GE. '0') .AND. (CH .LE. '9')
+isdigit = (CH >= '0') .AND. (CH <= '9')
 
 END FUNCTION ISDIGIT
 
@@ -28,7 +35,7 @@ END FUNCTION ISDIGIT
 elemental logical FUNCTION ISPM (CH)
 CHARACTER, INTENT(IN) :: CH
 
-ispm = (CH .EQ. '+') .OR. (CH .EQ. '-')
+ispm = (CH == '+') .OR. (CH == '-')
 
 END FUNCTION ISPM
 
@@ -41,7 +48,7 @@ END FUNCTION ISPM
 elemental logical FUNCTION ISHEX (CH)
 CHARACTER, INTENT(IN) :: CH
 
-ishex = (((CH .GE. '0') .AND. (CH .LE. '9')) .OR. ((CH .GE. 'A') .AND. (CH .LE. 'F')))
+ishex = (((CH >= '0') .AND. (CH <= '9')) .OR. ((CH >= 'A') .AND. (CH <= 'F')))
 
 END FUNCTION ISHEX
 
@@ -72,9 +79,6 @@ END FUNCTION ISHEX
 
       logical FUNCTION ISREAL (STR, X) RESULT (NUM_FLAG)
 
-      USE GLOBAL
-
-
       CHARACTER(LEN=*), INTENT(IN) :: STR
       real(wp), INTENT(OUT) :: X
       INTEGER :: I, IERR, ITMP, LENSTR
@@ -84,60 +88,60 @@ END FUNCTION ISHEX
       NUM_FLAG = .TRUE.
       LENSTR = LEN_TRIM(STR)
 
-      IF (BASE_MODE .NE. 10) GO TO 100
+      IF (BASE_MODE /= 10) goto 100
 
       CH = STR(1:1)
-      IF ((.NOT.ISPM(CH)).AND.(CH.NE.'.').AND.(.NOT.ISDIGIT(CH))) THEN              ! first character not +, -, ., or 0-9
+      IF ((.NOT.ISPM(CH)).AND.(CH/='.').AND.(.NOT.ISDIGIT(CH))) THEN              ! first character not +, -, ., or 0-9
          NUM_FLAG = .FALSE.
          RETURN
       END IF
-      IF (ISPM(CH).AND.(LENSTR.EQ.1)) THEN                                          ! + or - is the only character
+      IF (ISPM(CH).AND.(LENSTR==1)) THEN                                          ! + or - is the only character
          NUM_FLAG = .FALSE.
          RETURN
       END IF
-      IF ((CH.EQ.'.').AND.(LENSTR.EQ.1)) THEN                                       ! . is the only character
+      IF ((CH=='.').AND.(LENSTR==1)) THEN                                       ! . is the only character
          NUM_FLAG = .FALSE.
          RETURN
       END IF
-      IF ((CH.EQ.'E').AND.(LENSTR.EQ.1)) THEN                                       ! E is the only character
+      IF ((CH=='E').AND.(LENSTR==1)) THEN                                       ! E is the only character
          NUM_FLAG = .FALSE.
          RETURN
       END IF
 
-      DPFOUND = CH .EQ. '.'
+      DPFOUND = CH == '.'
       EFOUND = .FALSE.
 
       DO I = 2, LENSTR
          CH = STR(I:I)
          IF (ISDIGIT(CH)) CYCLE                                                     ! digit 0-9 OK anywhere
-         IF ((.NOT.ISPM(CH)).AND.(CH.NE.'.').AND.(.NOT.ISDIGIT(CH)).AND. &          ! invalid character
-               (CH.NE.'E')) THEN
+         IF ((.NOT.ISPM(CH)).AND.(CH/='.').AND.(.NOT.ISDIGIT(CH)).AND. &          ! invalid character
+               (CH/='E')) THEN
             NUM_FLAG = .FALSE.
             RETURN
          END IF
-         IF (DPFOUND .AND. (CH.EQ.'.')) THEN                                        ! more than one decimal point
+         IF (DPFOUND .AND. (CH=='.')) THEN                                        ! more than one decimal point
             NUM_FLAG = .FALSE.
             RETURN
          END IF
-         IF (EFOUND .AND. (CH.EQ.'.')) THEN                                         ! decimal point after E
+         IF (EFOUND .AND. (CH=='.')) THEN                                         ! decimal point after E
             NUM_FLAG = .FALSE.
             RETURN
          END IF
-         IF (EFOUND .AND. (CH.EQ.'E')) THEN                                         ! more than one E
+         IF (EFOUND .AND. (CH=='E')) THEN                                         ! more than one E
             NUM_FLAG = .FALSE.
             RETURN
          END IF
-         IF (ISPM(CH).AND.(STR(I-1:I-1).NE.'E')) THEN                               ! + or - must be preceded by E
+         IF (ISPM(CH).AND.(STR(I-1:I-1)/='E')) THEN                               ! + or - must be preceded by E
             NUM_FLAG = .FALSE.
             RETURN
          END IF
-         IF (CH.EQ.'E') THEN
-            IF (I .EQ. LENSTR) THEN                                                 ! E is the last character
+         IF (CH=='E') THEN
+            IF (I == LENSTR) THEN                                                 ! E is the last character
                NUM_FLAG = .FALSE.
                RETURN
             END IF
             IF (ISPM(STR(I+1:I+1))) THEN
-               IF (I .EQ. LENSTR-1) THEN                                            ! E+ or E- are the last two characters
+               IF (I == LENSTR-1) THEN                                            ! E+ or E- are the last two characters
                   NUM_FLAG = .FALSE.
                   RETURN
                END IF
@@ -152,13 +156,13 @@ END FUNCTION ISHEX
                END IF
             END IF
          END IF
-         DPFOUND = DPFOUND .OR. (CH .EQ. '.')
-         EFOUND = EFOUND .OR. (CH .EQ. 'E')
+         DPFOUND = DPFOUND .OR. (CH == '.')
+         EFOUND = EFOUND .OR. (CH == 'E')
       END DO
 
       READ (UNIT=STR, FMT=*, IOSTAT=IERR) X
 
-      NUM_FLAG = IERR .EQ. 0
+      NUM_FLAG = IERR == 0
 
       RETURN
 
@@ -166,27 +170,27 @@ END FUNCTION ISHEX
          CASE (2)                                                                   ! BIN mode
             DO I = 1, LENSTR
                CH = STR(I:I)
-               IF ((CH.NE.'0').AND.(CH.NE.'1')) THEN                                ! only 0 and 1 allowed
+               IF ((CH/='0').AND.(CH/='1')) THEN                                ! only 0 and 1 allowed
                   NUM_FLAG = .FALSE.
                   RETURN
                END IF
             END DO
             READ (UNIT=STR, FMT='(B30)', IOSTAT=IERR) ITMP
             X = real(itmp, wp)
-            NUM_FLAG = IERR .EQ. 0
+            NUM_FLAG = IERR == 0
          CASE (8)                                                                   ! OCT mode
             DO I = 1, LENSTR
                CH = STR(I:I)
-               IF ((CH.LT.'0').OR.(CH.GT.'7')) THEN                                 ! only 0-7 allowed
+               IF ((CH<'0').OR.(CH>'7')) THEN                                 ! only 0-7 allowed
                   NUM_FLAG = .FALSE.
                   RETURN
                END IF
             END DO
             READ (UNIT=STR, FMT='(O30)', IOSTAT=IERR) ITMP
             X = real(itmp, wp)
-            NUM_FLAG = IERR .EQ. 0
+            NUM_FLAG = IERR == 0
          CASE (16)                                                                  ! HEX mode
-            IF (STR.EQ.'DEC') THEN                                                  !   DEC is a valid hex integer, so check..
+            IF (STR=='DEC') THEN                                                  !   DEC is a valid hex integer, so check..
                NUM_FLAG = .FALSE.                                                   !   ..if we're switching to DEC mode
                RETURN                                                               !   (enter 0DEC to get the hex integer DEC)
             END IF
@@ -199,7 +203,7 @@ END FUNCTION ISHEX
             END DO
             READ (UNIT=STR, FMT='(Z30)', IOSTAT=IERR) ITMP
             X = real(itmp, wp)
-            NUM_FLAG = IERR .EQ. 0
+            NUM_FLAG = IERR == 0
       END SELECT
 
       END FUNCTION ISREAL
@@ -233,8 +237,6 @@ END FUNCTION ISHEX
 
       FUNCTION ISCOMPLEX (STR, X) RESULT (NUM_FLAG)
 
-      USE GLOBAL
-
       CHARACTER(LEN=*), INTENT(IN) :: STR
       COMPLEX(wp), INTENT(OUT) :: X
       LOGICAL :: NUM_FLAG
@@ -247,61 +249,61 @@ END FUNCTION ISHEX
       NUM_FLAG = .TRUE.
       LENSTR = LEN_TRIM(STR)
 
-      IF (BASE_MODE .NE. 10) GO TO 100
+      IF (BASE_MODE /= 10) goto 100
 
       CH = STR(1:1)
-      IF ((.NOT.ISPM(CH)).AND.(CH.NE.'.').AND.(.NOT.ISDIGIT(CH))) THEN              ! first character not +, -, ., or 0-9
+      IF ((.NOT.ISPM(CH)).AND.(CH/='.').AND.(.NOT.ISDIGIT(CH))) THEN              ! first character not +, -, ., or 0-9
          NUM_FLAG = .FALSE.
          RETURN
       END IF
-      IF (ISPM(CH).AND.(LENSTR.EQ.1)) THEN                                          ! + or - is the only character
+      IF (ISPM(CH).AND.(LENSTR==1)) THEN                                          ! + or - is the only character
          NUM_FLAG = .FALSE.
          RETURN
       END IF
-      IF ((CH.EQ.'.').AND.(LENSTR.EQ.1)) THEN                                       ! . is the only character
+      IF ((CH=='.').AND.(LENSTR==1)) THEN                                       ! . is the only character
          NUM_FLAG = .FALSE.
          RETURN
       END IF
-      IF ((CH.EQ.'E').AND.(LENSTR.EQ.1)) THEN                                       ! E is the only character
+      IF ((CH=='E').AND.(LENSTR==1)) THEN                                       ! E is the only character
          NUM_FLAG = .FALSE.
          RETURN
       END IF
 
-      DPFOUND = CH .EQ. '.'
+      DPFOUND = CH == '.'
       EFOUND = .FALSE.
       COMMAFOUND = .FALSE.
 
       DO I = 2, LENSTR
          CH = STR(I:I)
          IF (ISDIGIT(CH)) CYCLE                                                     ! digit 0-9 OK anywhere
-         IF ((.NOT.ISPM(CH)).AND.(CH.NE.'.').AND.(.NOT.ISDIGIT(CH)).AND. &          ! invalid character
-               (CH.NE.'E').AND.(CH.NE.',')) THEN
+         IF ((.NOT.ISPM(CH)).AND.(CH/='.').AND.(.NOT.ISDIGIT(CH)).AND. &          ! invalid character
+               (CH/='E').AND.(CH/=',')) THEN
             NUM_FLAG = .FALSE.
             RETURN
          END IF
-         IF (DPFOUND .AND. (CH.EQ.'.')) THEN                                        ! more than one decimal point
+         IF (DPFOUND .AND. (CH=='.')) THEN                                        ! more than one decimal point
             NUM_FLAG = .FALSE.
             RETURN
          END IF
-         IF (EFOUND .AND. (CH.EQ.'.')) THEN                                         ! decimal point after E
+         IF (EFOUND .AND. (CH=='.')) THEN                                         ! decimal point after E
             NUM_FLAG = .FALSE.
             RETURN
          END IF
-         IF (EFOUND .AND. (CH.EQ.'E')) THEN                                         ! more than one E
+         IF (EFOUND .AND. (CH=='E')) THEN                                         ! more than one E
             NUM_FLAG = .FALSE.
             RETURN
          END IF
-         IF (ISPM(CH).AND.(STR(I-1:I-1).NE.'E').AND.(STR(I-1:I-1).NE.',')) THEN     ! + or - must be preceded by E or comma
+         IF (ISPM(CH).AND.(STR(I-1:I-1)/='E').AND.(STR(I-1:I-1)/=',')) THEN     ! + or - must be preceded by E or comma
             NUM_FLAG = .FALSE.
             RETURN
          END IF
-         IF (CH.EQ.'E') THEN
-            IF (I .EQ. LENSTR) THEN                                                 ! E is the last character
+         IF (CH=='E') THEN
+            IF (I == LENSTR) THEN                                                 ! E is the last character
                NUM_FLAG = .FALSE.
                RETURN
             END IF
             IF (ISPM(STR(I+1:I+1))) THEN
-               IF (I .EQ. LENSTR-1) THEN                                            ! E+ or E- are the last two characters
+               IF (I == LENSTR-1) THEN                                            ! E+ or E- are the last two characters
                   NUM_FLAG = .FALSE.
                   RETURN
                END IF
@@ -316,10 +318,11 @@ END FUNCTION ISHEX
                END IF
             END IF
          END IF
-         DPFOUND = DPFOUND .OR. (CH .EQ. '.')
-         EFOUND = EFOUND .OR. (CH .EQ. 'E')
-         COMMAFOUND = COMMAFOUND .OR. (CH .EQ. ',')
-         IF (CH .EQ. ',') THEN
+         DPFOUND = DPFOUND .OR. (CH == '.')
+         EFOUND = EFOUND .OR. (CH == 'E')
+         COMMAFOUND = COMMAFOUND .OR. (CH == ',')
+         IF (CH == ',') THEN
+            ! allow(C181)
             READ (UNIT=STR(1:I-1), FMT=*, IOSTAT=IERRR) XR
             COMMAIDX = I
             DPFOUND = .FALSE.
@@ -336,13 +339,13 @@ END FUNCTION ISHEX
       END IF
 
       X = CMPLX(XR,XI, wp)
-      NUM_FLAG = (IERRR .EQ. 0) .AND. (IERRI .EQ. 0)
+      NUM_FLAG = (IERRR == 0) .AND. (IERRI == 0)
 
       RETURN
 
   100 COMMAFOUND = .FALSE.
 
-      IF (STR(1:1) .EQ. ',') THEN                                                   ! first character is a comma
+      IF (STR(1:1) == ',') THEN                                                   ! first character is a comma
          NUM_FLAG = .FALSE.
          RETURN
       END IF
@@ -351,15 +354,16 @@ END FUNCTION ISHEX
          CASE (2)                                                                   ! BIN mode
             DO I = 1, LENSTR
                CH = STR(I:I)
-               IF (CH .EQ. ',') THEN
+               IF (CH == ',') THEN
                   IF (COMMAFOUND) THEN                                              ! more than one comma found
                      NUM_FLAG = .FALSE.
                      RETURN
                   END IF
+                  ! allow(C181)
                   READ (UNIT=STR(1:I-1), FMT='(B50)', IOSTAT=IERRR) IXR
                   COMMAFOUND = .TRUE.
                   COMMAIDX = I
-               ELSE IF ((CH.NE.'0').AND.(CH.NE.'1')) THEN                           ! only 0 and 1 allowed
+               ELSE IF ((CH/='0').AND.(CH/='1')) THEN                           ! only 0 and 1 allowed
                   NUM_FLAG = .FALSE.
                   RETURN
                END IF
@@ -372,19 +376,20 @@ END FUNCTION ISHEX
                READ (UNIT=STR(COMMAIDX+1:), FMT='(B50)', IOSTAT=IERRI) IXI
             END IF
             X = CMPLX(real(ixr, wp),real(ixi, wp), wp)
-            NUM_FLAG = (IERRR .EQ. 0) .AND. (IERRI .EQ. 0)
+            NUM_FLAG = (IERRR == 0) .AND. (IERRI == 0)
          CASE (8)                                                                   ! OCT mode
             DO I = 1, LENSTR
                CH = STR(I:I)
-               IF (CH .EQ. ',') THEN
+               IF (CH == ',') THEN
                   IF (COMMAFOUND) THEN                                              ! more than one comma found
                      NUM_FLAG = .FALSE.
                      RETURN
                   END IF
+                  ! allow(C181)
                   READ (UNIT=STR(1:I-1), FMT='(O50)', IOSTAT=IERRR) IXR
                   COMMAFOUND = .TRUE.
                   COMMAIDX = I
-               ELSE IF ((CH.LT.'0').OR.(CH.GT.'7')) THEN                            ! only 0-7 allowed
+               ELSE IF ((CH<'0').OR.(CH>'7')) THEN                            ! only 0-7 allowed
                   NUM_FLAG = .FALSE.
                   RETURN
                END IF
@@ -397,19 +402,20 @@ END FUNCTION ISHEX
                READ (UNIT=STR(COMMAIDX+1:), FMT='(O50)', IOSTAT=IERRI) IXI
             END IF
             X = CMPLX(real(ixr, wp),real(ixi, wp), wp)
-            NUM_FLAG = (IERRR .EQ. 0) .AND. (IERRI .EQ. 0)
+            NUM_FLAG = (IERRR == 0) .AND. (IERRI == 0)
          CASE (16)                                                                  ! HEX mode
             DO I = 1, LENSTR
                CH = STR(I:I)
-               IF (CH .EQ. ',') THEN
+               IF (CH == ',') THEN
                   IF (COMMAFOUND) THEN                                              ! more than one comma found
                      NUM_FLAG = .FALSE.
                      RETURN
                   END IF
-                  IF (STR(1:I-1) .EQ. 'DEC') THEN                                   !   DEC is a valid hex integer, so check..
+                  IF (STR(1:I-1) == 'DEC') THEN                                   !   DEC is a valid hex integer, so check..
                      NUM_FLAG = .FALSE.                                             !   ..if we're switching to DEC mode
                      RETURN                                                         !   (enter 0DEC to get the hex integer DEC)
                   END IF
+                  ! allow(C181)
                   READ (UNIT=STR(1:I-1), FMT='(Z50)', IOSTAT=IERRR) IXR
                   COMMAFOUND = .TRUE.
                   COMMAIDX = I
@@ -419,7 +425,7 @@ END FUNCTION ISHEX
                END IF
             END DO
             IF (.NOT. COMMAFOUND) THEN
-               IF (STR(1:I-1) .EQ. 'DEC') THEN                                      !   DEC is a valid hex integer, so check..
+               IF (STR(1:I-1) == 'DEC') THEN                                      !   DEC is a valid hex integer, so check..
                   NUM_FLAG = .FALSE.                                                !   ..if we're switching to DEC mode
                   RETURN                                                            !   (enter 0DEC to get the hex integer DEC)
                END IF
@@ -427,14 +433,14 @@ END FUNCTION ISHEX
                IXI = 0
                IERRI = 0
             ELSE
-               IF (STR(1:I-1) .EQ. 'DEC') THEN                                      !   DEC is a valid hex integer, so check..
+               IF (STR(1:I-1) == 'DEC') THEN                                      !   DEC is a valid hex integer, so check..
                   NUM_FLAG = .FALSE.                                                !   ..if we're switching to DEC mode
                   RETURN                                                            !   (enter 0DEC to get the hex integer DEC)
                END IF
                READ (UNIT=STR(COMMAIDX+1:), FMT='(Z50)', IOSTAT=IERRI) IXI
             END IF
             X = CMPLX(real(IXR, wp), real(IXI, wp), wp)
-            NUM_FLAG = (IERRR .EQ. 0) .AND. (IERRI .EQ. 0)
+            NUM_FLAG = (IERRR == 0) .AND. (IERRI == 0)
       END SELECT
 
       END FUNCTION ISCOMPLEX
@@ -462,9 +468,6 @@ END FUNCTION ISHEX
 
       FUNCTION ISRATIONAL (STR, NUM, DEN) RESULT (NUM_FLAG)
 
-      USE GLOBAL
-
-
       CHARACTER(LEN=*), INTENT(IN) :: STR
       INTEGER, INTENT(OUT) :: NUM, DEN
       LOGICAL :: NUM_FLAG
@@ -476,14 +479,14 @@ END FUNCTION ISHEX
       NUM_FLAG = .TRUE.
       LENSTR = LEN_TRIM(STR)
 
-      IF (BASE_MODE .NE. 10) GO TO 100
+      IF (BASE_MODE /= 10) goto 100
 
       CH = STR(1:1)
       IF ((.NOT.ISPM(CH)).AND.(.NOT.ISDIGIT(CH))) THEN                              ! first character not +, -, or 0-9
          NUM_FLAG = .FALSE.
          RETURN
       END IF
-      IF (ISPM(CH).AND.(LENSTR.EQ.1)) THEN                                          ! + or - is the only character
+      IF (ISPM(CH).AND.(LENSTR==1)) THEN                                          ! + or - is the only character
          NUM_FLAG = .FALSE.
          RETURN
       END IF
@@ -493,12 +496,13 @@ END FUNCTION ISHEX
       DO I = 2, LENSTR
          CH = STR(I:I)
          IF (ISDIGIT(CH)) CYCLE                                                     ! digit 0-9 OK anywhere
-         IF ((.NOT.ISDIGIT(CH)).AND.(CH.NE.'/')) THEN                               ! invalid character
+         IF ((.NOT.ISDIGIT(CH)).AND.(CH/='/')) THEN                               ! invalid character
             NUM_FLAG = .FALSE.
             RETURN
          END IF
-         SLASHFOUND = SLASHFOUND .OR. (CH .EQ. '/')
-         IF (CH .EQ. '/') THEN
+         SLASHFOUND = SLASHFOUND .OR. (CH == '/')
+         IF (CH == '/') THEN
+            ! allow(C181)
             READ (UNIT=STR(1:I-1), FMT=*, IOSTAT=IERRN) NUM
             SLASHIDX = I
          END IF
@@ -512,7 +516,7 @@ END FUNCTION ISHEX
          READ (UNIT=STR(SLASHIDX+1:), FMT=*, IOSTAT=IERRD) DEN
       END IF
 
-      NUM_FLAG = (IERRN .EQ. 0) .AND. (IERRD .EQ. 0)
+      NUM_FLAG = (IERRN == 0) .AND. (IERRD == 0)
 
       IF (NUM_FLAG) CALL RATNORM (NUM, DEN)
 
@@ -520,7 +524,7 @@ END FUNCTION ISHEX
 
   100 SLASHFOUND = .FALSE.
 
-      IF (STR(1:1) .EQ. '/') THEN                                                   ! first character is a slash
+      IF (STR(1:1) == '/') THEN                                                   ! first character is a slash
          NUM_FLAG = .FALSE.
          RETURN
       END IF
@@ -529,15 +533,16 @@ END FUNCTION ISHEX
          CASE (2)                                                                   ! BIN mode
             DO I = 1, LENSTR
                CH = STR(I:I)
-               IF (CH .EQ. '/') THEN
+               IF (CH == '/') THEN
                   IF (SLASHFOUND) THEN                                              ! more than one slash found
                      NUM_FLAG = .FALSE.
                      RETURN
                   END IF
+                  ! allow(C181)
                   READ (UNIT=STR(1:I-1), FMT='(B50)', IOSTAT=IERRN) NUM
                   SLASHFOUND = .TRUE.
                   SLASHIDX = I
-               ELSE IF ((CH.NE.'0').AND.(CH.NE.'1')) THEN                           ! only 0 and 1 allowed
+               ELSE IF ((CH/='0').AND.(CH/='1')) THEN                           ! only 0 and 1 allowed
                   NUM_FLAG = .FALSE.
                   RETURN
                END IF
@@ -549,20 +554,21 @@ END FUNCTION ISHEX
             ELSE
                READ (UNIT=STR(SLASHIDX+1:), FMT='(B50)', IOSTAT=IERRD) DEN
             END IF
-            NUM_FLAG = (IERRN .EQ. 0) .AND. (IERRD .EQ. 0)
+            NUM_FLAG = (IERRN == 0) .AND. (IERRD == 0)
             IF (NUM_FLAG) CALL RATNORM (NUM, DEN)
          CASE (8)                                                                   ! OCT mode
             DO I = 1, LENSTR
                CH = STR(I:I)
-               IF (CH .EQ. '/') THEN
+               IF (CH == '/') THEN
                   IF (SLASHFOUND) THEN                                              ! more than one slash found
                      NUM_FLAG = .FALSE.
                      RETURN
                   END IF
+                  ! allow(C181)
                   READ (UNIT=STR(1:I-1), FMT='(O50)', IOSTAT=IERRN) NUM
                   SLASHFOUND = .TRUE.
                   SLASHIDX = I
-               ELSE IF ((CH.LT.'0').OR.(CH.GT.'7')) THEN                            ! only 0-7 allowed
+               ELSE IF ((CH<'0').OR.(CH>'7')) THEN                            ! only 0-7 allowed
                   NUM_FLAG = .FALSE.
                   RETURN
                END IF
@@ -574,20 +580,21 @@ END FUNCTION ISHEX
             ELSE
                READ (UNIT=STR(SLASHIDX+1:), FMT='(O50)', IOSTAT=IERRD) DEN
             END IF
-            NUM_FLAG = (IERRN .EQ. 0) .AND. (IERRD .EQ. 0)
+            NUM_FLAG = (IERRN == 0) .AND. (IERRD == 0)
             IF (NUM_FLAG) CALL RATNORM (NUM, DEN)
          CASE (16)                                                                  ! HEX mode
             DO I = 1, LENSTR
                CH = STR(I:I)
-               IF (CH .EQ. '/') THEN
+               IF (CH == '/') THEN
                   IF (SLASHFOUND) THEN                                              ! more than one slash found
                      NUM_FLAG = .FALSE.
                      RETURN
                   END IF
-                  IF (STR(1:I-1) .EQ. 'DEC') THEN                                   !   DEC is a valid hex integer, so check..
+                  IF (STR(1:I-1) == 'DEC') THEN                                   !   DEC is a valid hex integer, so check..
                      NUM_FLAG = .FALSE.                                             !   ..if we're switching to DEC mode
                      RETURN                                                         !   (enter 0DEC to get the hex integer DEC)
                   END IF
+                  ! allow(C181)
                   READ (UNIT=STR(1:I-1), FMT='(Z50)', IOSTAT=IERRN) NUM
                   SLASHFOUND = .TRUE.
                   SLASHIDX = I
@@ -597,7 +604,7 @@ END FUNCTION ISHEX
                END IF
             END DO
             IF (.NOT. SLASHFOUND) THEN
-               IF (STR(1:I-1) .EQ. 'DEC') THEN                                      !   DEC is a valid hex integer, so check..
+               IF (STR(1:I-1) == 'DEC') THEN                                      !   DEC is a valid hex integer, so check..
                   NUM_FLAG = .FALSE.                                                !   ..if we're switching to DEC mode
                   RETURN                                                            !   (enter 0DEC to get the hex integer DEC)
                END IF
@@ -605,13 +612,13 @@ END FUNCTION ISHEX
                DEN = 1
                IERRD = 0
             ELSE
-               IF (STR(1:I-1) .EQ. 'DEC') THEN                                      !   DEC is a valid hex integer, so check..
+               IF (STR(1:I-1) == 'DEC') THEN                                      !   DEC is a valid hex integer, so check..
                   NUM_FLAG = .FALSE.                                                !   ..if we're switching to DEC mode
                   RETURN                                                            !   (enter 0DEC to get the hex integer DEC)
                END IF
                READ (UNIT=STR(SLASHIDX+1:), FMT='(Z50)', IOSTAT=IERRD) DEN
             END IF
-            NUM_FLAG = (IERRN .EQ. 0) .AND. (IERRD .EQ. 0)
+            NUM_FLAG = (IERRN == 0) .AND. (IERRD == 0)
             IF (NUM_FLAG) CALL RATNORM (NUM, DEN)
       END SELECT
 
@@ -623,8 +630,6 @@ END FUNCTION ISHEX
 !***********************************************************************************************************************************
 
 SUBROUTINE SWITCH_RAT_TO_REAL
-
-USE GLOBAL
 
 DOMAIN_MODE = 1
 
@@ -668,10 +673,20 @@ END FUNCTION ISFRAC
 !  Returns .TRUE. if X has no fractional part (i.e. if X is an integer)
 !***********************************************************************************************************************************
 
-elemental logical FUNCTION ISINT (X)
-real(wp), INTENT(IN) :: X
+elemental logical FUNCTION ISINT (x)
+class(*), INTENT(IN) :: x
 
-isint = (ABS(X)-INT(ABS(X))) < epsilon(0._wp)
+real(wp) :: a
+
+select type (x)
+   type is (real(wp))
+      a = abs(x)
+   type is (complex(wp))
+      a = abs(x)
+end select
+
+isint = (a - int(a)) < epsilon(0._wp)
+
 END FUNCTION ISINT
 
 
@@ -692,7 +707,7 @@ ANN = AN                                                                      ! 
 ADN = AD
 CALL RATNORM (ANN,ADN)
 
-NEGFLAG = ANN .LT. 0                                                          ! save the sign of the fraction..
+NEGFLAG = ANN < 0                                                          ! save the sign of the fraction..
 ANN = ABS (ANN)                                                               ! ..and take its absolute value
 
 A1 = ANN / ADN                                                                ! find components of mixed fraction
@@ -767,20 +782,20 @@ INTEGER, INTENT(INOUT) :: NUM, DEN
 INTEGER :: G
 LOGICAL :: NEGFLAG
 
-IF (DEN .EQ. 0) THEN                                                        ! check for zero denominator
+IF (DEN == 0) THEN                                                        ! check for zero denominator
    ! write(stderr, *)  'Error in RATNORM: denominator is zero.'
    NUM = 0
    DEN = 1
    RETURN
 END IF
 
-IF (NUM .EQ. 0) THEN                                                        ! if zero numerator, just return 0/1
+IF (NUM == 0) THEN                                                        ! if zero numerator, just return 0/1
    NUM = 0
    DEN = 1
    RETURN
 END IF
 
-NEGFLAG = (NUM .LT. 0 .AND..NOT. DEN .LT. 0)       ! save sign of fraction in NEGFLAG
+NEGFLAG = (NUM < 0 .AND..NOT. DEN < 0)       ! save sign of fraction in NEGFLAG
 
 NUM = ABS(NUM)                                                            ! take absolute value of NUM and DEN
 DEN = ABS(DEN)
@@ -916,17 +931,17 @@ END SUBROUTINE RDIV
       D2 = 1
       N1 = INT(NU)
       N2 = N1 + 1
-      GO TO 300
-  100 IF (R .GT. 1) GO TO 200
+      goto 300
+  100 IF (R > 1) goto 200
       R = 1/R
   200 N2 = N2 + N1*INT(R)
       D2 = D2 + D1*INT(R)
       N1 = N1 + N2
       D1 = D1 + D2
   300 R = 0.0D0
-      IF (NU*D1 .EQ. DBLE(N1)) GO TO 400
+      IF (NU*D1 == DBLE(N1)) goto 400
       R = (N2-NU*D2)/(NU*D1-N1)
-      IF (R .GT. 1) GO TO 400
+      IF (R > 1) goto 400
       T = N2
       N2 = N1
       N1 = int(T)
@@ -934,18 +949,18 @@ END SUBROUTINE RDIV
       D2 = D1
       D1 = int(T)
   400 EPS = ABS(1 - (N1/(NU*D1)))
-      IF (EPS .LE. TOL1) GO TO 600
+      IF (EPS <= TOL1) goto 600
       M = 1
   500 M = 10*M
-      IF (M*EPS .LT. 1) GO TO 500
+      IF (M*EPS < 1) goto 500
       EPS = (1/M)*INT(0.5D0+M*EPS)
-  600 IF (EPS .LE. TOL1) THEN
+  600 IF (EPS <= TOL1) THEN
          NUM = N1
          DEN = D1
          IF (SGN) NUM = -NUM                                                        ! negate numerator if needed
          RETURN
       END IF
-      IF (R .NE. 0.0D0) GO TO 100
+      IF (R /= 0.0D0) goto 100
 
       END SUBROUTINE DEC_TO_FRAC
 

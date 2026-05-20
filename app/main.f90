@@ -10,7 +10,10 @@
 
 PROGRAM RPN
 use, intrinsic:: iso_fortran_env, only: stdout=>output_unit, stdin=>input_unit
+
+! allow(C121)
 USE GLOBAL
+
 use funcs, only:  isrational, isreal, iscomplex, toUpper
 use stackops, only: printx, push_stack
 use evals, only: eval
@@ -26,7 +29,7 @@ CHARACTER(100) :: NUMSTR
 LOGICAL :: NUM_FLAG = .false.
 
 
-print *, 'Fortran 2018  RPN Calculator, Version '//VERSION
+print '(a)', 'Fortran 2018  RPN Calculator, Version '//VERSION
 
 !     Initialize data.
 
@@ -112,7 +115,7 @@ DO                                                                            ! 
 
    DO
       IDX = INDEX(LINE(PTR:), ' ') + PTR - 1                                  ! look for the next space..
-      IF (IDX .EQ. 0) IDX = LEN(LINE(PTR:))                                   ! ..or end of line
+      IF (IDX == 0) IDX = LEN(LINE(PTR:))                                   ! ..or end of line
       SUBSTR = LINE(PTR:IDX-1)                                                ! get the current substring
 
       SELECT CASE (DOMAIN_MODE)
@@ -138,7 +141,7 @@ DO                                                                            ! 
       END IF
 
       PTR = IDX + 1                                                           ! update line pointer
-      IF (LEN_TRIM(LINE(PTR:)) .EQ. 0) EXIT                                   ! exit if at end of line
+      IF (LEN_TRIM(LINE(PTR:)) == 0) EXIT                                   ! exit if at end of line
    END DO
 
 
@@ -158,7 +161,8 @@ DO                                                                            ! 
 END DO
 
 ! -- end program by printing last value (helping automatic self test cases)
-print *,new_line('')
+print '(/)'
+
 SELECT CASE (DOMAIN_MODE)
 CASE (1)
   CALL PRINTX(STACK(1), NUMSTR)

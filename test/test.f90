@@ -1,6 +1,6 @@
 program test_funcs
 
-use funcs
+use funcs, only: csc, acsc, isdigit, ratnorm, frac
 use assert, only: assert_isclose, wp
 
 implicit none
@@ -22,5 +22,5 @@ if (.not. N==3 .and. D==5) stop 1
 call assert_isclose(frac(pi), pi-3)
 call assert_isclose(frac(-pi), -pi+3)
 
-print *,'OK RPN test'
-end program
+print '(a)','OK RPN test'
+end program test_funcs

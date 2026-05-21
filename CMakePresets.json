@@ -5,13 +5,13 @@
 {
   "name": "default",
   "binaryDir": "build",
+  "generator": "Ninja",
   "cacheVariables": {
     "CMAKE_COMPILE_WARNING_AS_ERROR": true,
     "CMAKE_LINK_WARNING_AS_ERROR": true,
     "CMAKE_BUILD_TYPE": "Release"
   }
 },
-{ "name": "build", "inherits": "default" },
 {
   "name": "debug", "inherits": "default",
   "cacheVariables": {
@@ -23,10 +23,8 @@
   {
     "name": "default",
     "configurePreset": "default",
-    "configuration": "Release",
-    "jobs": 0
+    "configuration": "Release"
   },
-  { "name": "build", "inherits": "default", "configurePreset": "build" },
   {
     "name": "debug",
     "configurePreset": "debug",
@@ -46,8 +44,7 @@
     "noTestsAction": "error",
     "scheduleRandom": true,
     "stopOnFailure": false,
-    "timeout": 60,
-    "jobs": 0
+    "timeout": 60
   }
 },
 {
@@ -68,8 +65,8 @@
   {
     "name": "build",
     "steps": [
-      { "type": "configure", "name": "build" },
-      { "type": "build", "name": "build" }
+      { "type": "configure", "name": "default" },
+      { "type": "build", "name": "default" }
     ]
   },
   {

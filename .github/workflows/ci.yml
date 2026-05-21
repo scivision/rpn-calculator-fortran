@@ -60,7 +60,7 @@ jobs:
 
   flang:
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
+    timeout-minutes: 10
 
     strategy:
       matrix:
@@ -82,7 +82,7 @@ jobs:
 
   gcc-old:
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 10
+    timeout-minutes: 5
 
     strategy:
       matrix:
@@ -100,7 +100,7 @@ jobs:
 
   windows-gcc:
     runs-on: windows-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
 
     steps:
     - uses: fortran-lang/setup-fortran@v1

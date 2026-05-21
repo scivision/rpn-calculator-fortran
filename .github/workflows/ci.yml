@@ -50,6 +50,13 @@ jobs:
     - &work-default
       run: cmake --workflow default
 
+    - name: Downloadable rpncalc.exe
+      uses: actions/upload-artifact@v7
+      if: success()
+      with:
+        name: rpncalc
+        path: build/rpncalc
+
 
   flang:
     runs-on: ${{ matrix.os }}
@@ -57,18 +64,14 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [macos-latest]
 
     env:
-      FC: flang-new
+      FC: flang
       HOMEBREW_NO_INSTALL_CLEANUP: 1
 
     steps:
     - *checkout
-
-    - name: install Flang (Linux)
-      if: runner.os == 'Linux'
-      run: sudo apt install --no-install-recommends flang
 
     - name: install Flang (macOS)
       if: runner.os == 'macOS'
@@ -119,7 +122,7 @@ jobs:
     - *install-pytest
     - *work-default
 
-    - name: .exe for release
+    - name: Downloadable rpncalc.exe
       uses: actions/upload-artifact@v7
       if: success()
       with:

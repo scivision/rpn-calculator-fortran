@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
 
-  gcc-new:
+  ubuntu24:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
 
@@ -50,7 +50,25 @@ jobs:
     - &work-default
       run: cmake --workflow default
 
-    - name: Downloadable rpncalc.exe
+
+  ubuntu26-gcc:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+
+    strategy:
+      matrix:
+        gcc_version: [15]
+
+    env:
+      FC: gfortran-${{ matrix.gcc_version }}
+
+    steps:
+    - *checkout
+    - *setup-python
+    - *install-pytest
+    - *work-default
+
+    - name: Downloadable rpncalc executable
       uses: actions/upload-artifact@v7
       if: success()
       with:
@@ -58,42 +76,24 @@ jobs:
         path: build/rpncalc
 
 
-  flang:
-    runs-on: ${{ matrix.os }}
+  ubuntu26-flang:
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
 
     strategy:
       matrix:
-        os: [macos-latest]
+        llvm-version: [22]
 
     env:
-      FC: flang
-      HOMEBREW_NO_INSTALL_CLEANUP: 1
+      FC: flang-${{ matrix.llvm-version }}
 
     steps:
     - *checkout
 
-    - name: install Flang (macOS)
-      if: runner.os == 'macOS'
-      run: brew install flang
-
-    - *work-default
-
-
-  gcc-old:
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 5
-
-    strategy:
-      matrix:
-        os: [ubuntu-22.04]
-        gcc_version: [9, 10, 11]
-
-    env:
-      FC: gfortran-${{ matrix.gcc_version }}
-
-    steps:
-    - *checkout
+    - name: install Flang
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y flang-${{ matrix.llvm-version }}
 
     - *work-default
 
